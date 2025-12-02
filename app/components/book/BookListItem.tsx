@@ -5,9 +5,22 @@ import Image from "next/image";
 import { Check, Plus, MoreHorizontal } from "lucide-react";
 
 export default function BookListItem({ book }: { book: any }) {
+  const imageLinks = book.volumeInfo.imageLinks || {};
+
+  // Kitap kapağı için mümkün olan en yüksek çözünürlüklü görseli seç
+  const rawImageUrl =
+    imageLinks.extraLarge ||
+    imageLinks.large ||
+    imageLinks.medium ||
+    imageLinks.small ||
+    imageLinks.thumbnail ||
+    imageLinks.smallThumbnail ||
+    "";
+
   const thumbnail =
-    book.volumeInfo.imageLinks?.thumbnail ||
-    "https://via.placeholder.com/200x300?text=No+Cover";
+    rawImageUrl
+      ? rawImageUrl.replace("http:", "https:")
+      : "https://placehold.co/200x300/1f1f1f/404040?text=No+Cover";
   const title = book.volumeInfo.title || "Başlık Yok";
   const authors = book.volumeInfo.authors?.join(", ") || "Bilinmeyen Yazar";
 
@@ -23,18 +36,21 @@ export default function BookListItem({ book }: { book: any }) {
       className="group flex items-center gap-4 p-3 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors relative w-full"
     >
       {/* Solda Kapak */}
-      <div className="flex-shrink-0 w-24 h-32 rounded-lg overflow-hidden shadow-md">
+      <div className="flex-shrink-0 w-24 h-32 rounded-lg overflow-hidden shadow-md relative">
         <Image
           src={thumbnail}
           width={96}
           height={128}
+          quality={80}
           alt={title}
           className="w-full h-full object-cover"
         />
-         <div className="absolute inset-0 flex flex-col justify-between
+        <div
+          className="absolute inset-0 flex flex-col justify-between
           p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200
           bg-gradient-to-t from-black/80 to-transparent rounded-lg
-          pointer-events-none">
+          pointer-events-none"
+        >
           <div className="mt-auto flex justify-end gap-1.5 z-10 pointer-events-auto">
             <button
               title="Okudum"

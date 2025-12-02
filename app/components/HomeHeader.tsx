@@ -261,8 +261,6 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
                   : "Kayıt Ol"}
               </button>
             </form>
-
-           
           </div>
         </div>
       )}

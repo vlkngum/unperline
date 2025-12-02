@@ -10,10 +10,21 @@ export default async function BookDetail({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const book = await getBook(id);
   const info = book?.volumeInfo || {};
+  const imageLinks = info.imageLinks || {};
+
+  const rawImageUrl =
+    imageLinks.extraLarge ||
+    imageLinks.large ||
+    imageLinks.medium ||
+    imageLinks.small ||
+    imageLinks.thumbnail ||
+    imageLinks.smallThumbnail ||
+    "";
 
   const thumbnail =
-    info.imageLinks?.thumbnail?.replace("http:", "https:") || 
-    "https://placehold.co/200x300/1f1f1f/404040?text=No+Cover";
+    rawImageUrl
+      ? rawImageUrl.replace("http:", "https:")
+      : "https://placehold.co/400x600/1f1f1f/404040?text=No+Cover";
 
   return (
     <main className="py-10 flex justify-center text-white w-full">
@@ -24,6 +35,7 @@ export default async function BookDetail({ params }: { params: Promise<{ id: str
             alt={info.title || "Untitled"}
             width={400}
             height={600}
+            quality={90}
             className="rounded-lg shadow-lg object-cover"
           />
         </div>
