@@ -75,7 +75,6 @@ export default function Header({ user }: HeaderProps) {
             </Link>
             <Link href="#" className="flex items-center text-lg font-semibold text-white transition-colors">
               Connect + 
-              {/* <Plus className="w-4 h-4 ml-0.5 semibold" strokeWidth={3} /> */}
             </Link>
           </div>
 

@@ -7,7 +7,7 @@ import { Check, Plus, MoreHorizontal } from "lucide-react";
 export default function BookListItem({ book }: { book: any }) {
   const thumbnail =
     book.volumeInfo.imageLinks?.thumbnail ||
-    "https://placehold.co/144x192/1f1f1f/404040?text=Kapak+Yok";
+    "https://via.placeholder.com/200x300?text=No+Cover";
   const title = book.volumeInfo.title || "Başlık Yok";
   const authors = book.volumeInfo.authors?.join(", ") || "Bilinmeyen Yazar";
 

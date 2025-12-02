@@ -13,7 +13,7 @@ export default async function BookDetail({ params }: { params: Promise<{ id: str
 
   const thumbnail =
     info.imageLinks?.thumbnail?.replace("http:", "https:") || 
-    "https://via.placeholder.com/200x300?text=No+Cover";
+    "https://placehold.co/200x300/1f1f1f/404040?text=No+Cover";
 
   return (
     <main className="py-10 flex justify-center text-white w-full">

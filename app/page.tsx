@@ -36,7 +36,7 @@ async function getBooksForCategory(query: string) {
 }
 
 export default async function Page() {
-  const currentUser = null; 
+  const currentUser = null;
 
   const categoryPromises = categories.map((category) =>
     getBooksForCategory(category.query)
@@ -46,7 +46,7 @@ export default async function Page() {
 
   return (
     <main className="min-h-screen text-white py-6 mx-auto">
-      <HomeHeader currentUser={currentUser} />
+      {!currentUser && <HomeHeader currentUser={currentUser} />}
 
       <div className="flex flex-col gap-8 mt-8">
         {categories.map((category, index) => {
