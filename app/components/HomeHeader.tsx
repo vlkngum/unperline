@@ -225,13 +225,14 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
               )}
               <div>
                 <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
-                  E-Posta
+                  {mode === "login" ? "E-Posta veya Kullanıcı Adı" : "E-Posta"}
                 </label>
                 <input
-                  type="email"
+                  type={mode === "login" ? "text" : "email"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  
                   className="w-full px-3 py-2.5 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
                 />
               </div>

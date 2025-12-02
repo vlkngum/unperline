@@ -138,7 +138,7 @@ export default function AuthModal({ open, setOpen, initialMode = 'login', maxW =
                 />
                 <button
                     type="submit"
-                    className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 h-12 text-white text-sm text-nowrap"
+                    className="px-4 py-2 rounded-md bg-[#1600c0] hover:bg-[#1300e0] h-12 text-white text-sm text-nowrap"
                 >
                     {isRegister ? "Register" : "Sıng In"}
                 </button>
