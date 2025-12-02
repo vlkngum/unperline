@@ -6,8 +6,7 @@ import { Check, Plus, MoreHorizontal } from "lucide-react";
 
 export default function BookListItem({ book }: { book: any }) {
   const imageLinks = book.volumeInfo.imageLinks || {};
-
-  // Kitap kapağı için mümkün olan en yüksek çözünürlüklü görseli seç
+ 
   const rawImageUrl =
     imageLinks.extraLarge ||
     imageLinks.large ||
@@ -39,9 +38,8 @@ export default function BookListItem({ book }: { book: any }) {
       <div className="flex-shrink-0 w-24 h-32 rounded-lg overflow-hidden shadow-md relative">
         <Image
           src={thumbnail}
-          width={96}
-          height={128}
-          quality={80}
+          width={1000}
+          height={1500}
           alt={title}
           className="w-full h-full object-cover"
         />
