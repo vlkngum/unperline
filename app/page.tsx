@@ -7,14 +7,9 @@ const categories = [
   { title: "Sizin İçin Önerilenler", query: "bestseller" },
   { title: "Tarih", query: "history" },
   { title: "Roman", query: "novel" },
-  { title: "Yerli Edebiyat", query: "turkish literature" },
   { title: "Savaş ve Strateji", query: "war history" },
-  { title: "Bilim ve Teknoloji", query: "science technology" },
   { title: "Klasikler", query: "classic literature" },
   { title: "Felsefe ve Düşünce", query: "philosophy" },
-  { title: "Psikoloji ve Kişisel Gelişim", query: "psychology self help" },
-  { title: "Fantastik ve Bilim Kurgu", query: "fantasy science fiction" },
-  { title: "Biyografi ve Anılar", query: "biography memoir" },
 ];
 
 async function getBooksForCategory(query: string) {

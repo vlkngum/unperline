@@ -65,8 +65,7 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
           setLoading(false);
           return;
         }
-      } else {
-        // Login
+      } else { 
         const res = await signIn("credentials", {
           redirect: false,
           email,
@@ -128,7 +127,7 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
         />
       
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-20">
-          <div className="space-y-2 md:space-y-4 font-serif font-bold text-white drop-shadow-2xl">
+          <div className="space-y-2 md:space-y-4 font-bold text-white drop-shadow-2xl opacity-90">
             <h2 className="text-3xl md:text-5xl leading-tight">
               Okuduğun kitapları takip et.
             </h2>
@@ -149,7 +148,7 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
               setIsOpen(true);
               setMode("register");
             }}
-            className="mt-10 bg-[#00c030] hover:bg-[#00e054] text-white cursor-pointer font-bold py-3 px-10 rounded shadow-lg uppercase tracking-widest text-sm transition-all transform hover:scale-105"
+            className="mt-10 bg-[#1600c0] hover:bg-[#1300e0] text-white cursor-pointer font-bold py-3 px-10 rounded shadow-lg uppercase tracking-widest text-sm transition-all transform hover:scale-105"
           >
             Hemen Başla — Ücretsiz!
           </button>
@@ -220,7 +219,7 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
-                    className="w-full p-3 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
+                    className="w-full px-3 py-2.5 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
                   />
                 </div>
               )}
@@ -233,7 +232,7 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full p-3 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
+                  className="w-full px-3 py-2.5 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
                 />
               </div>
               <div>
@@ -246,13 +245,13 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full p-3 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
+                  className="w-full px-3 py-2.5 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#00c030] hover:bg-[#00e054] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-3 rounded mt-2 uppercase tracking-widest text-sm transition-colors"
+                className="w-full bg-[#1600c0] hover:bg-[#1300e0] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-3 rounded mt-2 uppercase tracking-widest text-sm transition-colors"
               >
                 {loading
                   ? "Lütfen bekleyin..."

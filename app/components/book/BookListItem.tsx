@@ -17,9 +17,11 @@ export default function BookListItem({ book }: { book: any }) {
     "";
 
   const thumbnail =
-    rawImageUrl
-      ? rawImageUrl.replace("http:", "https:")
-      : "https://placehold.co/200x300/1f1f1f/404040?text=No+Cover";
+  rawImageUrl
+  ? rawImageUrl.replace("http:", "https:")
+  : "https://placehold.co/400x600/1f1f1f/404040?text=No+Cover";
+
+
   const title = book.volumeInfo.title || "Başlık Yok";
   const authors = book.volumeInfo.authors?.join(", ") || "Bilinmeyen Yazar";
 
