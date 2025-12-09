@@ -3,7 +3,7 @@ import HomeHeader from "./components/HomeHeader";
 
 export const dynamic = "force-dynamic";
 
-const categories = [
+const categories = [ 
   { title: "Sizin İçin Önerilenler", query: "bestseller" },
   { title: "Tarih", query: "history" },
   { title: "Roman", query: "novel" },
