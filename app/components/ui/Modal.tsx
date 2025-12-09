@@ -22,32 +22,33 @@ export default function Modal({ open, setOpen, children, maxW = 'md' }: ModalPro
     return (
         <AnimatePresence>
             {open && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+              <>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                //   className="fixed inset-0 z-[9999] flex justify-center items-start pt-20 bg-black/0 overflow-y-hidden" 
+                  className="fixed inset-0 z-[9999] bg-black/50 " 
+                  onClick={() => setOpen(false)} 
+                > 
+                  <motion.div 
+                    initial={{ scale: 0.9, y: 20, x: "-50%" }} 
+                    animate={{ scale: 1, y: 0, x: "-50%" }} 
+                    exit={{ scale: 0.9, y: 20, x: "-50%" }} 
+                    onClick={(e) => e.stopPropagation()} 
+                    className={`absolute left-1/2 bg-neutral-900 p-6 rounded-b-xl w-full ${maxWClasses[maxW]} mx-4 relative`}
+                  >
+                      <button
                         onClick={() => setOpen(false)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            exit={{ scale: 0.9, y: 20 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className={`bg-neutral-900 p-6 rounded-b-xl w-full ${maxWClasses[maxW]} mx-4 mt-30 relative`}
-                        >
-                            <button
-                                onClick={() => setOpen(false)}
-                                className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
-                                aria-label="Close"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                            {children}
-                        </motion.div>
-                    </motion.div>
-                </>
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
+                        aria-label="Close"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    {children}
+                  </motion.div>
+                </motion.div>
+              </>
             )}
         </AnimatePresence>
     );
