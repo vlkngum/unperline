@@ -1,63 +1,39 @@
 import BookCategoryRow from "./components/book/BookCategory";
-import HomeHeader from "./components/HomeHeader";
+import { GoogleBooksResponse, Book } from "./types/book";
 
 export const dynamic = "force-dynamic";
 
-const categories = [ 
+const categories = [
   { title: "Sizin İçin Önerilenler", query: "bestseller" },
   { title: "Tarih", query: "history" },
-  { title: "Roman", query: "novel" },
-  { title: "Savaş ve Strateji", query: "war history" },
-  { title: "Klasikler", query: "classic literature" },
-  { title: "Felsefe ve Düşünce", query: "philosophy" },
+  { title: "Kült", query: "cult" },
+  { title: "Film", query: "movie" },
+  { title: "Türk Kültürü", query: "turkish culture" },
 ];
 
-async function getBooksForCategory(query: string) {
-  const randomIndex = Math.floor(Math.random() * 20);
+async function fetchBooks(query: string): Promise<Book[]> {
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}`;
 
-  const res = await fetch(
-    `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=10&startIndex=${randomIndex}`,
-    {
-      cache: "no-store",
-    }
-  );
+  const res = await fetch(url, { cache: "no-store" });
+  const data: GoogleBooksResponse = await res.json();
 
-  if (!res.ok) {
-    return [];
-  }
-
-  const data = await res.json();
   return data.items || [];
 }
 
-export default async function Page() {
-  const currentUser = null;
-
-  const categoryPromises = categories.map((category) =>
-    getBooksForCategory(category.query)
+export default async function HomePage() {
+  const results = await Promise.all(
+    categories.map((c) => fetchBooks(c.query))
   );
 
-  const categoryResults = await Promise.all(categoryPromises);
-
   return (
-    <main className="min-h-screen text-white py-6 mx-auto">
-      {!currentUser && <HomeHeader currentUser={currentUser} />}
-
-      <div className="flex flex-col gap-8 mt-8">
-        {categories.map((category, index) => {
-          const books = categoryResults[index];
-          if (books && books.length > 0) {
-            return (
-              <BookCategoryRow
-                key={category.title}
-                title={category.title}
-                books={books}
-              />
-            );
-          }
-          return null;
-        })}
-      </div>
+    <main className="px-6 py-6">
+      {categories.map((cat, i) => (
+        <BookCategoryRow
+          key={cat.title}
+          title={cat.title}
+          books={results[i]}
+        />
+      ))}
     </main>
   );
 }

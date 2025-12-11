@@ -5,9 +5,24 @@ import Image from "next/image";
 import { Check, Plus, MoreHorizontal } from "lucide-react";
 
 export default function BookCard({ book }: { book: any }) {
+  const info = book?.volumeInfo || {};
+  const imageLinks = info.imageLinks || {};
+
+  const rawImageUrl =
+    imageLinks.extraLarge ||
+    imageLinks.large ||
+    imageLinks.medium ||
+    imageLinks.small ||
+    imageLinks.thumbnail ||
+    imageLinks.smallThumbnail ||
+    "";
+
   const thumbnail =
-    book.volumeInfo.imageLinks?.thumbnail ||
-    "https://via.placeholder.com/200x300?text=No+Cover";
+    rawImageUrl
+      ? rawImageUrl.replace("http:", "https:")
+      : "https://placehold.co/400x600/1f1f1f/404040?text=No+Cover";
+
+      
   const title = book.volumeInfo.title || "Başlık Yok";
   const authors = book.volumeInfo.authors?.join(", ") || "Bilinmeyen Yazar";
 

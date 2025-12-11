@@ -31,13 +31,12 @@ export default async function BookDetail({ params }: { params: Promise<{ id: str
       <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         
         <div className="lg:col-span-3 flex flex-col items-center lg:items-start">
-          <div className="relative w-[250px] lg:w-full aspect-[2/3] rounded-lg shadow-2xl overflow-hidden hover:scale-[1.02] transition-transform duration-300">
+          <div className="relative w-[250px] lg:w-full aspect-[2/3] rounded-lg shadow-2xl overflow-hidden hover:scale-[1.02] cursor-pointer transition-transform duration-300">
              <Image
               src={thumbnail}
               alt={info.title || "Untitled"}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 250px, 300px"
               priority
             />
           </div>
