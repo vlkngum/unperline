@@ -66,6 +66,7 @@ export default async function BookDetail({ params }: { params: Promise<{ id: str
 
         <div className="lg:col-span-3">
         <BookActions 
+        bookId={id}
         title={info.title}       
         coverUrl={thumbnail}     
      />

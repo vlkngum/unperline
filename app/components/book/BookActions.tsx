@@ -1,54 +1,217 @@
 "use client";
 
-import { useState, useId, MouseEvent } from "react";
+import { useState, useId, MouseEvent, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import ReviewModal from "../ReviewModal"; 
 
 interface BookActionsProps {
+  bookId: string;
   title?: string;
   coverUrl?: string;
 }
 
-export default function BookActions({ title = "Untitled", coverUrl = "" }: BookActionsProps) {
+export default function BookActions({ bookId, title = "Untitled", coverUrl = "" }: BookActionsProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [rating, setRating] = useState(0); 
   const [hoverRating, setHoverRating] = useState(0);
+  const [isRead, setIsRead] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isInReadList, setIsInReadList] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const displayRating = hoverRating > 0 ? hoverRating : rating;
 
-  const handleRatingClick = (value: number) => {
-    rating === value ? setRating(0) : setRating(value);
+  // Mevcut durumu yükle
+  useEffect(() => {
+    if (session?.user?.id && bookId) {
+      fetch(`/api/books/${bookId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.rating) setRating(data.rating);
+          setIsRead(data.isRead || false);
+          setIsLiked(data.isLiked || false);
+          setIsInReadList(data.isInReadList || false);
+        })
+        .catch((err) => console.error("Error fetching book status:", err));
+    }
+  }, [session, bookId]);
+
+  const handleRatingClick = async (value: number) => {
+    if (!session?.user?.id) {
+      router.push("/");
+      return;
+    }
+
+    const newRating = rating === value ? 0 : value;
+    setRating(newRating);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(`/api/books/${bookId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "rate", rating: newRating }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsRead(data.readBooks.includes(bookId));
+        setIsInReadList(data.readList.includes(bookId));
+        if (newRating === 0) {
+          setRating(0);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating rating:", error);
+      setRating(rating); // Geri al
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>, index: number) => {
     const { left, width } = e.currentTarget.getBoundingClientRect();
     const percent = (e.clientX - left) / width;
-    const newValue = index * 2 + (percent < 0.5 ? 1 : 2);
+    const newValue = Math.min(9, index * 2 + (percent < 0.5 ? 1 : 2));
     setHoverRating(newValue);
   };
 
-  const handleActionClick = (action: string) => {
-    if (action === "review") {
-        setIsModalOpen(true);
+  const handleReadClick = async () => {
+    if (!session?.user?.id) {
+      router.push("/");
+      return;
     }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/books/${bookId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "read" }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsRead(data.readBooks.includes(bookId));
+        setIsInReadList(data.readList.includes(bookId));
+        if (!data.readBooks.includes(bookId)) {
+          setRating(0);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating read status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLikeClick = async () => {
+    if (!session?.user?.id) {
+      router.push("/");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/books/${bookId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "like" }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsLiked(data.likedBooks.includes(bookId));
+        setIsRead(data.readBooks.includes(bookId));
+        setIsInReadList(data.readList.includes(bookId));
+      }
+    } catch (error) {
+      console.error("Error updating like status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReadListClick = async () => {
+    if (!session?.user?.id) {
+      router.push("/");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/books/${bookId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "readList" }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsInReadList(data.readList.includes(bookId));
+      }
+    } catch (error) {
+      console.error("Error updating read list:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleActionClick = (action: string) => {
+    if (session?.user?.id) {
+      if (action === "review") {
+        setIsModalOpen(true);
+      }
+    } else {
+      router.push("/");
+      return;
+    }
+      
   };
 
   return (
     <>
-        {/* SIDEBAR PANEL */}
         <div className="w-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg overflow-hidden text-center sticky top-4">
         
          <div className="flex justify-around items-center py-4 bg-slate-900/40 border-b border-slate-700/50 text-indigo-200">
-              <button className="flex flex-col items-center gap-1 hover:text-white transition group">
-                <EyeIcon className="w-8 h-8 group-hover:scale-110 transition-transform" />
+              <button 
+                onClick={handleReadClick}
+                disabled={isLoading}
+                className={`flex flex-col items-center gap-1 transition group ${
+                  isRead 
+                    ? "text-green-400 hover:text-green-300" 
+                    : "hover:text-white"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <EyeIcon className={`w-8 h-8 group-hover:scale-110 transition-transform ${isRead ? "fill-current" : ""}`} />
                 <span className="text-xs font-medium">Okundu</span>
               </button>
-              <button className="flex flex-col items-center gap-1 hover:text-pink-500 transition group text-indigo-200">
-                <HeartIcon className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-medium group-hover:text-pink-500">Beğen</span>
+              <button 
+                onClick={handleLikeClick}
+                disabled={isLoading}
+                className={`flex flex-col items-center gap-1 transition group ${
+                  isLiked 
+                    ? "text-pink-500 hover:text-pink-400" 
+                    : "text-indigo-200 hover:text-pink-500"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <HeartIcon className={`w-8 h-8 group-hover:scale-110 transition-transform ${isLiked ? "fill-current" : ""}`} />
+                <span className={`text-xs font-medium ${isLiked ? "text-pink-500" : "group-hover:text-pink-500"}`}>Beğen</span>
               </button>
-              <button className="flex flex-col items-center gap-1 hover:text-white transition group">
-                <ClockIcon className="w-8 h-8 group-hover:scale-110 transition-transform" />
+              <button 
+                onClick={handleReadListClick}
+                disabled={isLoading}
+                className={`flex flex-col items-center gap-1 transition group ${
+                  isInReadList 
+                    ? "text-yellow-400 hover:text-yellow-300" 
+                    : "hover:text-white"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <ClockIcon className={`w-8 h-8 group-hover:scale-110 transition-transform ${isInReadList ? "fill-current" : ""}`} />
                 <span className="text-xs font-medium">Listem</span>
               </button>
          </div>
@@ -71,7 +234,12 @@ export default function BookActions({ title = "Untitled", coverUrl = "" }: BookA
                     else fillPercentage = 0;   
         
                     return (
-                      <div key={index} className="relative cursor-pointer w-8 h-8 flex items-center justify-center" onMouseMove={(e) => handleMouseMove(e, index)} onClick={() => handleRatingClick(hoverRating)}>
+                      <div 
+                        key={index} 
+                        className={`relative w-8 h-8 flex items-center justify-center ${isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`} 
+                        onMouseMove={(e) => !isLoading && handleMouseMove(e, index)} 
+                        onClick={() => !isLoading && handleRatingClick(hoverRating)}
+                      >
                         <StarIcon percentage={fillPercentage} className="w-8 h-8 transition-transform active:scale-95" />
                       </div>
                     );
@@ -105,11 +273,12 @@ export default function BookActions({ title = "Untitled", coverUrl = "" }: BookA
         </div>
 
         <ReviewModal 
-            isOpen={isModalOpen} 
-            onClose={() => setIsModalOpen(false)}
-            title={title}
-            coverUrl={coverUrl}
-        />
+          bookId={bookId}
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)}
+          title={title}
+          coverUrl={coverUrl}
+      />
     </>
   );
 }
@@ -129,6 +298,28 @@ function StarIcon({ className, percentage }: { className?: string; percentage: n
     </svg>
   );
 }
-function EyeIcon({ className }: { className?: string }) { return (<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>); }
-function HeartIcon({ className }: { className?: string }) { return (<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>); }
-function ClockIcon({ className }: { className?: string }) { return (<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>); }
+function EyeIcon({ className }: { className?: string }) { 
+  const hasFill = className?.includes("fill-current");
+  return (
+    <svg fill={hasFill ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  ); 
+}
+function HeartIcon({ className }: { className?: string }) { 
+  const hasFill = className?.includes("fill-current");
+  return (
+    <svg fill={hasFill ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+  ); 
+}
+function ClockIcon({ className }: { className?: string }) { 
+  const hasFill = className?.includes("fill-current");
+  return (
+    <svg fill={hasFill ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ); 
+}

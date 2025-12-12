@@ -123,6 +123,7 @@ export default function Header({ user }: HeaderProps) {
                   >
                     <Link
                       href={`/p/${encodeURIComponent(user.name || "me")}`}
+                      className="block py-2 text-sm hover:text-neutral-300"
                       title={user.name || "Profilim"}>
                         Hesabım
                     </Link>
