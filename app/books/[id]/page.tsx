@@ -43,20 +43,32 @@ export default async function BookDetail({ params }: { params: Promise<{ id: str
           </div>
         </div>
 
-        <div className="flex w-full flex-col justify-between py-4 px-8">
-          <div className="">
-            <h1 className="text-4xl md:text-5xl font-bold mb-3 hover:text-indigo-400 transition-colors cursor-pointer">
-              {info.title || "No title"}
-            </h1>
-            <p className="text-indigo-300 pl-1 mb-5">{info.authors?.join(", ") || "Unknown author"}</p>
-            
-            <div className="w-full ">
-                <BookTabs info={info} />
-            </div>
-        
+        <div className="lg:col-span-6 flex flex-col">
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 hover:text-indigo-400 transition-colors cursor-pointer leading-tight">
+            {info.title || "No title"}
+          </h1>
+          
+          <div className="flex flex-wrap items-baseline gap-2 mb-6">
+            <p className="text-indigo-300 text-lg font-medium">
+              {info.authors?.join(", ") || "Unknown author"}
+            </p>
+            {info.publishedDate && (
+                <span className="text-gray-500 text-sm">
+                    ({info.publishedDate.split("-")[0]})
+                </span>
+            )}
           </div>
 
-           
+          <div className="w-full">
+            <BookTabs info={info} />
+          </div>
+        </div>
+
+        <div className="lg:col-span-3">
+        <BookActions 
+        title={info.title}       
+        coverUrl={thumbnail}     
+     />
         </div>
 
       </div>
