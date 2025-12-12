@@ -101,7 +101,10 @@ export default function Header({ user }: HeaderProps) {
               onMouseEnter={() => setOpen(true)}
               onMouseLeave={() => setOpen(false)}
             >
-              <Link href={'/profile'}>
+              <Link
+                href={`/p/${encodeURIComponent(user.name || "me")}`}
+                title={user.name || "Profilim"}
+              >
                 <img
                   className="w-10 h-10 rounded-full object-cover cursor-pointer"
                   src={user.avatar || '/dex.png'}
@@ -118,8 +121,10 @@ export default function Header({ user }: HeaderProps) {
                     transition={{ duration: 0.15 }}
                     className="absolute right-0 mt-2 bg-neutral-900 shadow-xl rounded-xl py-2 px-4 border border-neutral-700/30 w-min flex-nowrap text-nowrap"
                   >
-                    <Link href="/profile" className="block py-2 text-sm hover:text-neutral-300">
-                      Hesabım
+                    <Link
+                      href={`/p/${encodeURIComponent(user.name || "me")}`}
+                      title={user.name || "Profilim"}>
+                        Hesabım
                     </Link>
                     <Link href="/profile/books" className="block py-2 text-sm hover:text-neutral-300">
                       Kitaplarım

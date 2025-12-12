@@ -39,7 +39,7 @@ export default function BookCard({ book }: { book: any }) {
         className="block w-full"
         title={title}
       >
-        <div className="w-full h-48 bg-neutral-800 rounded-lg overflow-hidden shadow-lg">
+        <div className="w-full h-48 bg-neutral-800 rounded-lg overflow-hidden shadow-lg border border-white/30">
           <Image
             src={thumbnail}
             alt={title}

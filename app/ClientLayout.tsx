@@ -29,6 +29,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isProfilePage = pathname?.startsWith("/p/");
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -63,7 +64,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          <main className="flex-1 max-w-7xl mx-auto ">{children}</main>
+          <main className={`flex-1 ${isProfilePage ? 'w-full' : 'max-w-7xl mx-auto px-4'}`}>
+            {children}
+          </main>
 
           {!isAuthPage && (
             <footer className="h-12 border-t border-neutral-800 flex items-center justify-center text-sm text-neutral-500 mx-auto px-10">
