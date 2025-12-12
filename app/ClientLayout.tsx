@@ -30,6 +30,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/register";
   const isProfilePage = pathname?.startsWith("/p/");
+  const isWidePage = pathname === "/members" || pathname === "/connect";
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -64,7 +65,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          <main className={`flex-1 ${isProfilePage ? 'w-full' : 'max-w-7xl mx-auto px-4'}`}>
+<main className={`flex-1 ${isProfilePage ? 'w-full' : isWidePage ? 'w-full mx-auto px-4' : 'max-w-7xl mx-auto px-4'}`}>
             {children}
           </main>
 

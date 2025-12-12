@@ -73,7 +73,7 @@ export default function Header({ user }: HeaderProps) {
             <Link href="#" className="text-lg font-semibold text-white transition-colors">
               Books
             </Link>
-            <Link href="#" className="flex items-center text-lg font-semibold text-white transition-colors">
+            <Link href="/connect" className="flex items-center text-lg font-semibold text-white transition-colors">
               Connect + 
             </Link>
           </div>
