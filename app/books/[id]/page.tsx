@@ -51,7 +51,7 @@ export default async function BookDetail({ params }: { params: Promise<{ id: str
                 <BookTabs info={info} />
             </div>
         
-          </div>
+          </div>/**/ */
 
            
         </div>
