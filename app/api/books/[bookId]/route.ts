@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   req: Request,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,7 +14,7 @@ export async function POST(
 
     const { bookId } = await params;
     const body = await req.json();
-    const { action, rating, review } = body; // REVIEW BURADA
+    const { action, rating, review } = body;
 
     const userId = parseInt(session.user.id);
 
@@ -121,7 +121,7 @@ export async function POST(
 
 export async function GET(
   req: Request,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
     const session = await auth();
