@@ -14,7 +14,7 @@ export async function POST(
 
     const { bookId } = await params;
     const body = await req.json();
-    const { action, rating, review } = body;
+    const { action, rating, review, liked, isFirstTime } = body;
 
     const userId = parseInt(session.user.id);
 
@@ -31,13 +31,13 @@ export async function POST(
     let updatedReadList = [...user.readList];
     let updatedLikedBooks = [...user.likedBooks];
 
-    // Rating yapısı artık { rating, review }
+    // Rating yapısı artık { rating, review, liked, isFirstTime }
     let updatedRatings: Record<
       string,
-      { rating: number; review: string }
+      { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }
     > =
       typeof user.bookRatings === "object" && user.bookRatings !== null
-        ? (user.bookRatings as Record<string, { rating: number; review: string }>)
+        ? (user.bookRatings as Record<string, { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }>)
         : {};
 
     // *** READ ***
@@ -82,6 +82,8 @@ export async function POST(
         updatedRatings[bookId] = {
           rating,
           review: review ?? "",
+          liked: liked ?? false,
+          isFirstTime: isFirstTime ?? false,
         };
 
         if (!updatedReadBooks.includes(bookId)) {
@@ -148,18 +150,23 @@ export async function GET(
 
     const ratings: Record<
       string,
-      { rating: number; review: string }
+      { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }
     > =
       typeof user.bookRatings === "object" && user.bookRatings !== null
-        ? (user.bookRatings as Record<string, { rating: number; review: string }>)
+        ? (user.bookRatings as Record<string, { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }>)
         : {};
+
+    const bookRating = ratings[bookId];
 
     return NextResponse.json({
       isRead: user.readBooks.includes(bookId),
       isLiked: user.likedBooks.includes(bookId),
       isInReadList: user.readList.includes(bookId),
-      rating: ratings[bookId]?.rating || 0,
-      review: ratings[bookId]?.review || "",
+      rating: bookRating?.rating || 0,
+      review: bookRating?.review || "",
+      liked: bookRating?.liked || false,
+      isFirstTime: bookRating?.isFirstTime ?? undefined,
+      exists: !!bookRating,
     });
   } catch (error: any) {
     console.error("[BOOKS API] Error:", error);
