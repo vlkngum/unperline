@@ -1,157 +1,182 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import Modal from './ui/Modal';  
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom"; // 1. IMPORT ETTİK
+import { useRouter } from "next/navigation";
 
 interface AuthModalProps {
-    open: boolean;
-    setOpen: (open: boolean) => void;
-    initialMode?: 'login' | 'register';
-    maxW?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+  isOpen: boolean;
+  onClose: () => void;
+  initialMode?: "login" | "register";
 }
 
-export default function AuthModal({ open, setOpen, initialMode = 'login', maxW = 'md' }: AuthModalProps) {
-    const [isRegister, setIsRegister] = useState(initialMode === 'register');
-    const [error, setError] = useState("");
-    const router = useRouter();
+export default function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalProps) {
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
+  // ... diğer state'lerin aynı kalsın
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  // 2. MOUNT KONTROLÜ (Hydration hatası almamak için)
+  const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setIsRegister(initialMode === 'register');
-    }, [initialMode]);
+  const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const username = formData.get("username")?.toString() ?? "";
-        const emailOrUsername = formData.get(isRegister ? "email" : "emailOrUsername")?.toString() ?? "";
-        const password = formData.get("password")?.toString() ?? "";
+  useEffect(() => {
+    setMounted(true); // Sayfa yüklendiğinde true yap
+  }, []);
 
-        if (isRegister) {
-            try {
-                console.log("[AUTH_MODAL] Register attempt started");
-                console.log("[AUTH_MODAL] Register data:", { 
-                    username: username?.substring(0, 3) + "***", 
-                    email: emailOrUsername?.substring(0, 3) + "***",
-                    hasPassword: !!password 
-                });
-                
-                const registerRes = await fetch("/api/register", {
-                    method: "POST",
-                    body: JSON.stringify({ username, email: emailOrUsername, password }),
-                    headers: { "Content-Type": "application/json" },
-                });
-                
-                console.log("[AUTH_MODAL] Register response status:", registerRes.status);
-                
-                if (!registerRes.ok) {
-                    const errorData = await registerRes.json().catch(() => ({}));
-                    console.error("[AUTH_MODAL] Register failed:", errorData);
-                    setError(errorData.error || "Register failed");
-                    return;
-                }
-                
-                const userData = await registerRes.json();
-                console.log("[AUTH_MODAL] Register successful:", { id: userData.id });
-                
-                console.log("[AUTH_MODAL] Attempting auto-login...");
-                const loginRes = await signIn("credentials", {
-                    redirect: false,
-                    email: emailOrUsername, 
-                    password: password,
-                });
-                
-                console.log("[AUTH_MODAL] Login response:", { error: loginRes?.error, ok: loginRes?.ok });
-                
-                if (loginRes?.error) {
-                    console.error("[AUTH_MODAL] Auto-login failed:", loginRes.error);
-                    setError("Registered but login failed. Please try logging in.");
-                } else {
-                    console.log("[AUTH_MODAL] Auto-login successful, closing modal");
-                    setOpen(false);
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      resetForm();
+      // Modal açılınca arkadaki scroll'u kitleyelim
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Kapanınca açalım
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup function
+    return () => {
+       document.body.style.overflow = 'unset';
+    }
+  }, [isOpen, initialMode]);
 
-                    router.refresh();
-                }
-            } catch (err: any) {
-                console.error("[AUTH_MODAL] Register error:", err);
-                setError(`Register failed: ${err.message || "Unknown error"}`);
-            }
-        } else {
-            try {
-                console.log("[AUTH_MODAL] Login attempt started");
-                console.log("[AUTH_MODAL] Login data:", { 
-                    emailOrUsername: emailOrUsername?.substring(0, 3) + "***",
-                    hasPassword: !!password 
-                });
-                
-                const res = await signIn("credentials", {
-                    redirect: false,
-                    email: emailOrUsername, 
-                    password,
-                });
-                
-                console.log("[AUTH_MODAL] Login response:", { error: res?.error, ok: res?.ok });
-                
-                if (res?.error) {
-                    console.error("[AUTH_MODAL] Login failed:", res.error);
-                    setError("Invalid credentials");
-                } else {
-                    console.log("[AUTH_MODAL] Login successful, closing modal");
-                    setOpen(false);
-                    
-                    router.refresh();
-                }
-            } catch (err: any) {
-                console.error("[AUTH_MODAL] Login error:", err);
-                setError(`Login failed: ${err.message || "Unknown error"}`);
-            }
-        }
-    };
+  const resetForm = () => {
+    setError("");
+    setLoading(false);
+    setEmail("");
+    setPassword("");
+    setUsername("");
+  };
 
-    return (
-        <Modal open={open} setOpen={() => setOpen(false)} maxW={maxW}>
-            <h2 className="text-2xl font-semibold">{isRegister ? "Register" : "Login"}</h2>
-            {error && <p className="text-red-500">{error}</p>}
-            <form className="space-y-4 mt-4 flex flex-row gap-2 " onSubmit={handleSubmit}>
-                {isRegister && (
-                    <input
-                        name="username"
-                        placeholder="Username"
-                        required
-                        className="w-full px-4 py-2 border rounded-md h-12 bg-neutral-800 text-white"
-                    />
-                )}
-                <input
-                    name={isRegister ? "email" : "emailOrUsername"}
-                    placeholder={isRegister ? "Email" : "Email or Username"}
-                    required
-                    className="w-full px-4 py-2 border rounded-md h-12 bg-neutral-800 text-white"
-                />
-                <input
-                    name="password"
-                    type="password"
-                    placeholder="Password"
-                    required
-                    minLength={6}
-                    className="w-full px-4 py-2 border rounded-md h-12 bg-neutral-800 text-white"
-                />
-                <button
-                    type="submit"
-                    className="px-4 py-2 rounded-md bg-[#1600c0] hover:bg-[#1300e0] h-12 text-white text-sm text-nowrap"
-                >
-                    {isRegister ? "Register" : "Sign In"}
-                </button>
-            </form>
-            <p className="text-sm text-gray-400">
-                {isRegister ? "Already have an account?" : "No account yet?"}{" "}
-                <button
-                    onClick={() => setIsRegister(!isRegister)}
-                    className="underline hover:text-white"
-                >
-                    {isRegister ? "Login" : "Register"}
-                </button>
-            </p>
-        </Modal>
-    );
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    // ... buralar senin kodunla aynı ...
+    e.preventDefault();
+    // ... login/register işlemleri ...
+    // ...
+  };
+
+  // 3. EĞER KAPALIYSA VEYA HENÜZ MOUNT OLMADIYSA GÖSTERME
+  if (!isOpen || !mounted) return null;
+
+  // 4. CREATE PORTAL İLE BODY'YE IŞINLIYORUZ
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md bg-[#14181c] border border-gray-700 rounded-lg p-8 shadow-2xl">
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+        >
+          ✕
+        </button>
+
+        {/* ... FORM İÇERİĞİ AYNI KALACAK ... */}
+         <div className="flex justify-center mb-6 gap-4 mt-4">
+            {/* ... butonlar vs ... */}
+            {/* Senin mevcut JSX kodların buraya gelecek */}
+             <button
+            type="button"
+            onClick={() => {
+              setMode("login");
+              setError("");
+            }}
+            className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${
+              mode === "login"
+                ? "bg-white text-black"
+                : "bg-transparent text-gray-400 hover:text-white"
+            }`}
+          >
+            Giriş Yap
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("register");
+              setError("");
+            }}
+            className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${
+              mode === "register"
+                ? "bg-white text-black"
+                : "bg-transparent text-gray-400 hover:text-white"
+            }`}
+          >
+            Kayıt Ol
+          </button>
+         </div>
+
+         {/* ... Kalan form kodların ... */}
+         <h2 className="text-2xl font-bold text-white mb-4 text-center mt-2">
+          {mode === "login" ? "Giriş Yap" : "Unperline'a Katıl"}
+        </h2>
+
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-3">{error}</p>
+        )}
+
+        <form className="flex flex-col gap-4" onSubmit={handleAuthSubmit}>
+           {/* ... inputlar ... */}
+             {mode === "register" && (
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+                Kullanıcı Adı
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="w-full px-3 py-2.5 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
+              />
+            </div>
+          )}
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+              {mode === "login" ? "E-Posta veya Kullanıcı Adı" : "E-Posta"}
+            </label>
+            <input
+              type={mode === "login" ? "text" : "email"}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-3 py-2.5 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+              Şifre
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-3 py-2.5 bg-[#2c3440] border border-transparent focus:border-white rounded text-white focus:outline-none transition-colors"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#1600c0] hover:bg-[#1300e0] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-3 rounded mt-2 uppercase tracking-widest text-sm transition-colors"
+          >
+            {loading
+              ? "Lütfen bekleyin..."
+              : mode === "login"
+              ? "Giriş Yap"
+              : "Kayıt Ol"}
+          </button>
+        </form>
+      </div>
+    </div>,
+    document.body // BU KISIM ÖNEMLİ: React bunu body'nin içine render edecek
+  );
 }
