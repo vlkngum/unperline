@@ -48,8 +48,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
         className={`${inter.variable} font-sans mx-auto text-white min-h-screen antialiased relative overflow-hidden`}
       >
         {!isAuthPage && (
-          <div className="fixed inset-0 -z-10 bg-indigo-900/10  overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0f172a]/60 to-black"></div>
+          <div className="fixed inset-0 -z-10 bg-indigo-900/100  overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0f172a]/100 to-black"></div>
 
             <div className="absolute w-64 h-64 bg-blue-600 rounded-full opacity-10 blur-3xl animate-move1 top-10 left-20"></div>
             <div className="absolute w-48 h-48 bg-blue-600 rounded-full opacity-10 blur-2xl animate-move2 top-1/2 left-1/3"></div>
