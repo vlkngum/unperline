@@ -41,9 +41,9 @@ export default async function Page() {
 
   return (
     <main className="min-h-screen text-white mx-auto">
-      {!currentUser && <HomeHeader currentUser={currentUser} />}
+      {/* {!currentUser && <HomeHeader currentUser={currentUser} />} */}
 
-      <div className="flex flex-col gap-8 mt-8">
+      {/* <div className="flex flex-col gap-8 mt-8">
         {categories.map((category, index) => {
           const books = categoryResults[index];
           if (books && books.length > 0) {
@@ -57,7 +57,7 @@ export default async function Page() {
           }
           return null;
         })}
-      </div>
+      </div> */}
     </main>
   );
 }
