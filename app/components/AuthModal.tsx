@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom"; // 1. IMPORT ETTİK
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react"; // BU IMPORT ÖNEMLİ
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,34 +13,28 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalProps) {
   const [mode, setMode] = useState<"login" | "register">(initialMode);
-  // ... diğer state'lerin aynı kalsın
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   
-  // 2. MOUNT KONTROLÜ (Hydration hatası almamak için)
   const [mounted, setMounted] = useState(false);
-
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true); // Sayfa yüklendiğinde true yap
+    setMounted(true);
   }, []);
 
   useEffect(() => {
     if (isOpen) {
       setMode(initialMode);
       resetForm();
-      // Modal açılınca arkadaki scroll'u kitleyelim
       document.body.style.overflow = 'hidden';
     } else {
-      // Kapanınca açalım
       document.body.style.overflow = 'unset';
     }
     
-    // Cleanup function
     return () => {
        document.body.style.overflow = 'unset';
     }
@@ -58,17 +53,67 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
     onClose();
   };
 
+  // İŞTE SENİN İSTEDİĞİN GİRİŞ/KAYIT MANTIĞI BURADA
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // ... buralar senin kodunla aynı ...
     e.preventDefault();
-    // ... login/register işlemleri ...
-    // ...
+    setLoading(true);
+    setError("");
+
+    try {
+      if (mode === "register") {
+        // 1. Kayıt Olma İsteği
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setError(data.error || "Kayıt başarısız");
+          setLoading(false);
+          return;
+        }
+
+        // 2. Kayıt Başarılıysa Otomatik Giriş Yap
+        const loginRes = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        });
+
+        if (loginRes?.error) {
+          setError("Kayıt başarılı ama giriş başarısız, lütfen tekrar giriş yap.");
+          setLoading(false);
+          return;
+        }
+      } else { 
+        // 3. Direkt Giriş Yapma (Login Modu)
+        const res = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        });
+
+        if (res?.error) {
+          setError("E-posta veya şifre hatalı");
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 4. Her şey başarılıysa:
+      handleClose();    // Modalı kapat
+      router.refresh(); // Sayfayı yenile ki header güncellensin (Avatar gelsin)
+
+    } catch (err) {
+      setError("Bir hata oluştu, lütfen tekrar deneyin.");
+      setLoading(false);
+    }
   };
 
-  // 3. EĞER KAPALIYSA VEYA HENÜZ MOUNT OLMADIYSA GÖSTERME
   if (!isOpen || !mounted) return null;
 
-  // 4. CREATE PORTAL İLE BODY'YE IŞINLIYORUZ
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-[#14181c] border border-gray-700 rounded-lg p-8 shadow-2xl">
@@ -79,11 +124,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
           ✕
         </button>
 
-        {/* ... FORM İÇERİĞİ AYNI KALACAK ... */}
-         <div className="flex justify-center mb-6 gap-4 mt-4">
-            {/* ... butonlar vs ... */}
-            {/* Senin mevcut JSX kodların buraya gelecek */}
-             <button
+        <div className="flex justify-center mb-6 gap-4 mt-4">
+          <button
             type="button"
             onClick={() => {
               setMode("login");
@@ -111,10 +153,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
           >
             Kayıt Ol
           </button>
-         </div>
+        </div>
 
-         {/* ... Kalan form kodların ... */}
-         <h2 className="text-2xl font-bold text-white mb-4 text-center mt-2">
+        <h2 className="text-2xl font-bold text-white mb-4 text-center mt-2">
           {mode === "login" ? "Giriş Yap" : "Unperline'a Katıl"}
         </h2>
 
@@ -123,8 +164,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
         )}
 
         <form className="flex flex-col gap-4" onSubmit={handleAuthSubmit}>
-           {/* ... inputlar ... */}
-             {mode === "register" && (
+          {mode === "register" && (
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
                 Kullanıcı Adı
@@ -177,6 +217,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
         </form>
       </div>
     </div>,
-    document.body // BU KISIM ÖNEMLİ: React bunu body'nin içine render edecek
+    document.body 
   );
 }
