@@ -1,12 +1,13 @@
 'use client'
 
-import { Search, Plus, BookOpen } from 'lucide-react'
+import { Search, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { handleSignOut } from '@/app/lib/actions'
-import AuthModal from './AuthModal'
+// AuthModal'ı oluşturduğun yerden import et (Örn: components klasörü)
+import AuthModal from './AuthModal' 
 
 interface HeaderProps {
   user?: {
@@ -23,9 +24,12 @@ const LogoIcon = () => (
 
 export default function Header({ user }: HeaderProps) {
   const [query, setQuery] = useState('')
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false) // Profil dropdown'ı için
+  
+  // Auth Modal State'leri
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
+  
   const router = useRouter()
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -145,11 +149,11 @@ export default function Header({ user }: HeaderProps) {
             </div>
           )}
 
+          {/* DÜZELTİLEN KISIM: AuthModal Props Eşleşmesi */}
           <AuthModal 
-            open={authOpen} 
-            setOpen={setAuthOpen}
+            isOpen={authOpen} 
+            onClose={() => setAuthOpen(false)}
             initialMode={authMode}
-            maxW={"2xl"}
           />
         </div>
       </div>
