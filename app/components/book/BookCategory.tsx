@@ -25,8 +25,8 @@ export default function BookCategoryRow({
           ))}
         </div>
 
-        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#141414]/90 to-transparent pointer-events-none" />
-        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#141414]/90 to-transparent pointer-events-none" />
+        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#141414]/80 to-transparent pointer-events-none" />
+        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#141414]/80 to-transparent pointer-events-none" />
       </div>
      </section>
   );
