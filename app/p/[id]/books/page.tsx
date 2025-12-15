@@ -9,6 +9,27 @@ import { useSession } from "next-auth/react";
 import { Pencil } from "lucide-react";
 import BookCard from "../../../components/book/BookCard";
 
+// Statik, örnek puanlar (sonradan dinamik veriye bağlanabilir)
+const STATIC_BOOK_RATINGS: Record<
+  string,
+  {
+    value: number; // 0-5 arası puan
+    count?: number; // oy sayısı (isteğe bağlı)
+  }
+> = {
+  zyTCAlFPjgYC: { value: 4.8, count: 1245 },
+  "1wy49i-gQjIC": { value: 4.2, count: 532 },
+  m8dPPgAACAAJ: { value: 3.9, count: 210 },
+  yZ1VDwAAQBAJ: { value: 4.5, count: 987 },
+  uW8oEAAAQBAJ: { value: 4.0, count: 321 },
+  eLRhEAAAQBAJ: { value: 4.7, count: 764 },
+  "xv8sAAAAYAAJ": { value: 3.6, count: 89 },
+  tQ8IAQAAMAAJ: { value: 4.1, count: 145 },
+  "QrkEAQAAIAAJ": { value: 4.9, count: 2031 },
+  OEBaEAAAQBAJ: { value: 3.8, count: 156 },
+  jRvQByotUY4C: { value: 4.3, count: 102 },
+};
+
 const FAVORITE_IDS = [
   "zyTCAlFPjgYC",
   "m8dPPgAACAAJ",
@@ -308,7 +329,10 @@ export default function ProfileBooksPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
                 {sortedBooks.map((book) => (
                   <div key={book.id}>
-                    <BookCard book={book} />
+                    <BookCard
+                      book={book}
+                      rating={STATIC_BOOK_RATINGS[book.id]}
+                    />
                   </div>
                 ))}
               </div>
