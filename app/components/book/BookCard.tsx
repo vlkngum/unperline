@@ -44,7 +44,7 @@ export default function BookCard({ book, rating }: { book: any; rating?: StaticR
         className="block w-full"
         title={title}
       >
-        <div className="w-full h-48 bg-neutral-800 rounded-lg overflow-hidden shadow-lg border border-white/30">
+        <div className="relative w-full h-48 bg-neutral-800 rounded-lg overflow-hidden shadow-lg border border-white/30">
           <Image
             src={thumbnail}
             alt={title}
@@ -52,41 +52,42 @@ export default function BookCard({ book, rating }: { book: any; rating?: StaticR
             height={192}
             className="w-full h-full object-cover"
           />
-        </div>
-      </Link>
 
-      <div
-        className="absolute inset-0 flex flex-col justify-between
-        p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200
-        bg-gradient-to-t from-black/80 to-transparent rounded-lg
-        pointer-events-none"
-      >
-        <div className="mt-auto">
-          <div className="flex justify-end gap-1.5 z-10 pointer-events-auto">
-            <button
-              title="Okudum"
-              onClick={(e) => handleActionClick(e, "Okudum")}
-              className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
-            >
-              <Check size={16} />
-            </button>
-            <button
-              title="Okuma Listesine Ekle"
-              onClick={(e) => handleActionClick(e, "Listeye Ekle")}
-              className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
-            >
-              <Plus size={16} />
-            </button>
-            <button
-              title="Daha Fazla"
-              onClick={(e) => handleActionClick(e, "Daha Fazla")}
-              className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
-            >
-              <MoreHorizontal size={16} />
-            </button>
+          {/* Hover sadece görsel üzerinde olsun */}
+          <div
+            className="absolute inset-0 flex flex-col justify-between
+            p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200
+            bg-gradient-to-t from-black/80 to-transparent rounded-lg
+            pointer-events-none"
+          >
+            <div className="mt-auto">
+              <div className="flex justify-end gap-1.5 z-10 pointer-events-auto">
+                <button
+                  title="Okudum"
+                  onClick={(e) => handleActionClick(e, "Okudum")}
+                  className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
+                >
+                  <Check size={16} />
+                </button>
+                <button
+                  title="Okuma Listesine Ekle"
+                  onClick={(e) => handleActionClick(e, "Listeye Ekle")}
+                  className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
+                >
+                  <Plus size={16} />
+                </button>
+                <button
+                  title="Daha Fazla"
+                  onClick={(e) => handleActionClick(e, "Daha Fazla")}
+                  className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
+                >
+                  <MoreHorizontal size={16} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </Link>
       {/* Başlık + puan her zaman kapak altında görünsün */}
       <div className="mt-2 space-y-1">
         <h2 className="text-sm font-medium text-white truncate">
