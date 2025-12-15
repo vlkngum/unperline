@@ -18,7 +18,7 @@ export default function BookCategoryRow({
       </h2>
       <div className="relative">
         <div className="flex gap-4 py-2 px-4 lg:px-0 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-thin scroll-hidden ">
-          {books.slice(0, 8).map((book) => (
+          {books.map((book) => (
             <div key={book.id} className="flex-shrink-0 w-36 snap-start">
               <BookCard book={book} />
             </div>

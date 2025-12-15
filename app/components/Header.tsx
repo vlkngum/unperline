@@ -131,7 +131,10 @@ export default function Header({ user }: HeaderProps) {
                       title={user.name || "Profilim"}>
                         Hesabım
                     </Link>
-                    <Link href="/profile/books" className="block py-2 text-sm hover:text-neutral-300">
+                    <Link
+                      href={`/p/${encodeURIComponent(user.name || "me")}/books`}
+                      className="block py-2 text-sm hover:text-neutral-300"
+                    >
                       Kitaplarım
                     </Link>
                     <Link href="/likes" className="block py-2 text-sm hover:text-neutral-300">
