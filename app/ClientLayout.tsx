@@ -65,7 +65,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-<main className={`flex-1 ${isProfilePage ? 'w-full' : isWidePage ? 'w-full mx-auto px-4' : 'max-w-7xl mx-auto px-4'}`}>
+          <main className={`flex w-full mx-auto px-4 max-w-7xl`}>
             {children}
           </main>
 

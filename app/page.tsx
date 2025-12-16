@@ -8,12 +8,11 @@ const categories = [
   { title: "Tarih", query: "history" },
   { title: "Roman", query: "novel" },
   { title: "Savaş ve Strateji", query: "war history" },
-  { title: "Klasikler", query: "classic literature" },
-  { title: "Felsefe ve Düşünce", query: "philosophy" },
+  { title: "Klasikler", query: "classic literature" }, 
 ];
 
 async function getBooksForCategory(query: string) {
-  const randomIndex = Math.floor(Math.random() * 20);
+  const randomIndex = Math.floor(Math.random() * 50);
 
   const res = await fetch(
     `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=10&startIndex=${randomIndex}`,

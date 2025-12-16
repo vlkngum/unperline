@@ -7,14 +7,24 @@ datasource db {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  username    String   @unique
-  email       String   @unique
-  password    String
-  isVerified  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  readBooks   String[] @default([])
-  readList    String[] @default([])
-  likedBooks  String[] @default([])
-  bookRatings Json     @default("{}")
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  email         String   @unique
+  password      String
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  readBooks     String[] @default([])
+  readList      String[] @default([])
+  likedBooks    String[] @default([])
+  bookRatings   Json     @default("{}")
+  // Profil alanları
+  firstName     String?
+  lastName      String?
+  fullName      String?
+  avatarUrl     String?
+  bannerUrl     String?
+  location      String?
+  bio           String?
+  pronouns      String?
+  favoriteBooks String[] @default([])
 }

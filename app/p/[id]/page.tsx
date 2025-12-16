@@ -2,10 +2,10 @@
 
 import { GoogleBooksResponse, Book } from "../../types/book";
 import Image from "next/image";
-import { useState, useEffect, useMemo } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useParams } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { Pencil } from "lucide-react";
 import BookCategoryRow from "../../components/book/BookCategory";
 
@@ -43,6 +43,21 @@ async function fetchBooksByIds(ids: string[]): Promise<Book[]> {
   return results.filter(Boolean) as Book[];
 }
 
+type ProfileStats = { books: number; followers: number; following: number };
+
+type ProfileData = {
+  id: number;
+  username: string;
+  email: string;
+  fullName?: string | null;
+  avatarUrl?: string | null;
+  bannerUrl?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  pronouns?: string | null;
+  favoriteBooks: string[];
+};
+
 function ProfileHeader({
   profileId,
   isOwner,
@@ -50,13 +65,15 @@ function ProfileHeader({
   profileImage,
   stats,
   description,
+  editHref,
 }: {
   profileId: string;
   isOwner: boolean;
   bannerUrl: string;
   profileImage: string;
-  stats: { books: number; followers: number; following: number };
+  stats: ProfileStats;
   description?: string;
+  editHref?: string;
 }) {
   return (
     <header className="border-b border-white/10 w-full relative">
@@ -117,12 +134,16 @@ function ProfileHeader({
                 </p>
               )}
             </div>
-        {isOwner && (
-              <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black font-italic hover:bg-gray-100 transition shadow-md">
-                <Pencil size={16} />
-                <span className="font-italic">Profili Düzenle</span>
-              </button>
-            )}
+        {/* Düzenleme butonu ayrı sayfaya yönlendiriyor */}
+        {isOwner && editHref && (
+          <Link
+            href={editHref}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-sm font-medium hover:bg-gray-100 transition shadow-md"
+          >
+            <Pencil size={16} />
+            <span>Profili Düzenle</span>
+          </Link>
+        )}
         </div>
         
       </div>
@@ -132,13 +153,13 @@ function ProfileHeader({
 
 export default function ProfilePage() {
   const params = useParams();
-  const pathname = usePathname();
   const profileId = params?.id?.toString() || "profil";
   const { data: session } = useSession();
   const [favoriteBooks, setFavoriteBooks] = useState<Book[]>([]);
   const [recentBooks, setRecentBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentTab] = useState("overview")
+  const [currentTab] = useState("overview");
+  const [profile, setProfile] = useState<ProfileData | null>(null);
 
   const isOwner = useMemo(() => {
     const sessionName = session?.user?.name?.toString().toLowerCase();
@@ -147,8 +168,7 @@ export default function ProfilePage() {
     return !!session && (sessionName === pid || sessionEmail?.split("@")[0] === pid);
   }, [session, profileId]);
 
-
-
+  // Google Books vitrin verileri
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -163,6 +183,27 @@ export default function ProfilePage() {
     load();
   }, []);
 
+  // Profil verisini backend'den çek
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/profile", { cache: "no-store" });
+        if (!res.ok) return;
+        const data: ProfileData = await res.json();
+        setProfile({
+          ...data,
+          favoriteBooks: (data.favoriteBooks || []).slice(0, 4),
+        });
+      } catch (e) {
+        console.error("Profil yüklenirken hata:", e);
+      }
+    }
+
+    if (session?.user?.id) {
+      loadProfile();
+    }
+  }, [session?.user?.id]);
+
   const tabs = [
     { id: "overview", label: "Genel Bakış", href: `/p/${encodeURIComponent(profileId)}` },
     { id: "books", label: "Kitaplar", href: `/p/${encodeURIComponent(profileId)}/books` },
@@ -174,15 +215,19 @@ export default function ProfilePage() {
     <div className="min-h-screen text-white w-full">
     <div className="max-w-6xl mx-auto w-full">
       <ProfileHeader
-        profileId={profileId}
+        profileId={profile?.username || profileId}
         isOwner={isOwner}
-        bannerUrl="/dex2.jpg"
-        profileImage="/dex.png"
+        bannerUrl={profile?.bannerUrl || "/dex2.jpg"}
+        profileImage={profile?.avatarUrl || "/dex.png"}
         stats={{ books: 128, followers: 45, following: 32 }}
-        description="Kitap sever, okuma tutkunu. Her gün yeni bir hikaye keşfediyorum."
+        description={
+          profile?.bio ||
+          "Kitap sever, okuma tutkunu. Her gün yeni bir hikaye keşfediyorum."
+        }
+        editHref={isOwner ? `/profile/edit` : undefined}
       />
 
-<div className="border-b border-white/10 bg-neutral-950 w-full">
+        <div className="border-b border-white/10 bg-neutral-950 w-full">
           <div className="px-4">
             <nav className="flex gap-1 -mb-px">
               {tabs.map((tab) => {
@@ -218,7 +263,7 @@ export default function ProfilePage() {
                 />
               )}
 
-{recentBooks.length > 0 && (
+          {recentBooks.length > 0 && (
                 <BookCategoryRow
                   key="recent"
                   title="Son Okunanlar"
