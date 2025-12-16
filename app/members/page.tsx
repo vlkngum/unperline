@@ -32,16 +32,16 @@ export default function MembersPage() {
   ];
 
   return (
-    <main className="min-h-screen text-slate-200 selection:bg-indigo-500/30">
+    <main className="min-h-screen text-slate-200 selection:bg-indigo-500/30 w-full py-10">
       
       {/* Arkaplan Efekti */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-indigo-900/10 blur-[120px] rounded-full pointer-events-none z-0" />
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto bg-[#0B0E14] min-h-screen py-12 px-4 md:px-8 pb-20 space-y-16">
+      <div className="relative z-10 w-full max-w-7xl mx-auto bg-[#0B0E14]/80 min-h-screen py-12 px-4 md:px-8 pb-20 space-y-16">
 
         
         {/* --- HEADER & SORT BAR --- */}
-        <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 border-b border-slate-800 pb-4 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-6 border-b border-slate-800 pb-4 gap-4 ">
           
           {/* Başlık */}
           <div>
