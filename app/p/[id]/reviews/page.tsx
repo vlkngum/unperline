@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ReviewCard from "../../../components/review/ReviewCard";
 
+// 1. Hata Çözümü: fetchBookById fonksiyonunu sayfa içine ekledik
 async function fetchBookById(id: string): Promise<Book | null> {
   try {
     const res = await fetch(
@@ -18,6 +19,7 @@ async function fetchBookById(id: string): Promise<Book | null> {
   }
 }
 
+// 2. Hata Çözümü: Tip tanımlamalarını buraya ekledik
 type ReviewData = {
   bookId: string;
   rating: number;
@@ -53,9 +55,7 @@ export default function ProfileReviewsPage() {
       try {
         const res = await fetch(
           `/api/p/${encodeURIComponent(profileId)}/reviews`,
-          {
-            cache: "no-store",
-          }
+          { cache: "no-store" }
         );
 
         if (!res.ok) {
@@ -70,18 +70,13 @@ export default function ProfileReviewsPage() {
 
         setProfile(profileData);
 
-        // Her review için kitap bilgilerini çek
         const reviewsWithBooks = await Promise.all(
           reviewData.map(async (review) => {
             const book = await fetchBookById(review.bookId);
-            return {
-              ...review,
-              book,
-            };
+            return { ...review, book };
           })
         );
 
-        // Kitap bilgisi olanları filtrele
         setReviews(reviewsWithBooks.filter((r) => r.book !== null));
       } catch (error) {
         console.error("İncelemeler yüklenirken hata:", error);
@@ -92,23 +87,26 @@ export default function ProfileReviewsPage() {
     load();
   }, [profileId]);
 
+  // page.tsx içindeki return kısmı
   return (
     <div className="min-h-screen text-white w-full">
-      <div className="max-w-4xl mx-auto w-full">
-        <div className="px-4 py-8 space-y-6 w-full">
+      {/* Sola yaslı ve genişliği artırılmış ana konteyner */}
+      <div className="w-full max-w-[1400px] px-6 py-10"> 
+        <div className="w-full flex flex-col items-start space-y-8">
           {loading ? (
-            <p className="text-gray-500">İncelemeler yükleniyor…</p>
+            <p className="text-gray-500 text-lg animate-pulse">İncelemeler yükleniyor…</p>
           ) : reviews.length === 0 ? (
-            <p className="text-gray-500">Henüz inceleme yok.</p>
+            <p className="text-gray-500 text-lg">Henüz inceleme yok.</p>
           ) : (
-            <div className="space-y-6">
+            <div className="w-full flex flex-col items-start space-y-8">
               {reviews.map((review) => (
-                <ReviewCard
-                  key={review.bookId}
-                  review={review}
-                  book={review.book}
-                  profile={profile!}
-                />
+                <div key={review.bookId} className="w-full">
+                  <ReviewCard
+                    review={review}
+                    book={review.book}
+                    profile={profile!}
+                  />
+                </div>
               ))}
             </div>
           )}

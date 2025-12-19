@@ -94,46 +94,53 @@ export default function BookCard({ book, rating }: { book: any; rating?: StaticR
           {title}
         </h2>
         {rating && (
-          (() => {
-            const valueIn5Scale = rating.value / 2;
-            const normalizedValue = Math.max(0, Math.min(5, valueIn5Scale));
-            const rounded = Math.round(normalizedValue * 2) / 2; 
-            const fullStars = Math.floor(rounded);
-            const hasHalfStar = rounded - fullStars >= 0.5;
-            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-            
-            return (
-              <div className="flex items-center justify-between text-[11px] text-green-500">
-                <div className="flex items-center gap-0.5">
-                  <span className="flex">
-                    {Array.from({ length: fullStars }).map((_, i) => (
-                      <span key={`full-${i}`} className="text-green-500">
-                        ★
-                      </span>
-                    ))}
-                    {hasHalfStar && (
-                      <span
-                        key="half"
-                        className="relative inline-flex w-3 h-3 mx-[1px]"
-                      >
-                        <span className="absolute inset-0 text-green-500">
-                          ☆
-                        </span>
-                        <span
-                          className="absolute inset-0 overflow-hidden"
-                          style={{ width: "50%" }}
-                        >
-                          <span className="text-green-500">★</span>
-                        </span>
-                      </span>
-                    )}
-                    
-                  </span>
-                </div>
-              </div>
-            );
-          })()
-        )}
+  (() => {
+    const valueIn5Scale = rating.value / 2;
+    const normalizedValue = Math.max(0, Math.min(5, valueIn5Scale));
+    const rounded = Math.round(normalizedValue * 2) / 2;
+    const fullStars = Math.floor(rounded);
+    const hasHalfStar = rounded - fullStars >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+      <div className="flex items-center justify-between text-[11px]">
+        {/* leading-none ve items-center satır içi kaymayı engeller */}
+        <div className="flex items-center gap-0.5 leading-none">
+          {/* Tam Yıldızlar */}
+          {Array.from({ length: fullStars }).map((_, i) => (
+            <span key={`full-${i}`} className="text-green-500 text-xs">
+              ★
+            </span>
+          ))}
+
+          {/* Yarım Yıldız Düzenlemesi */}
+          {hasHalfStar && (
+            <span className="relative inline-flex w-[12px] h-[12px] items-center justify-center">
+              {/* Alttaki gri taban */}
+              <span className="absolute inset-0 text-gray-600 text-xs flex items-center justify-center">
+                ★
+              </span>
+              {/* Üstteki yeşil parça - flex ve items-center ile tam hizalandı */}
+              <span
+                className="absolute inset-0 overflow-hidden flex items-center"
+                style={{ width: "44%" }}
+              >
+                <span className="text-green-500 text-xs">★</span>
+              </span>
+            </span>
+          )}
+
+          {/* Boş Yıldızlar */}
+          {Array.from({ length: emptyStars }).map((_, i) => (
+            <span key={`empty-${i}`} className="text-gray-600 text-xs">
+              ★
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  })()
+)}
       </div>
     </div>
   );

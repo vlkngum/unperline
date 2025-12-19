@@ -25,9 +25,8 @@ type ReviewCardProps = {
   profile: ProfileData;
 };
 
-// Yıldız gösterimi için component
+// Referans aldığın BookCard stiline göre güncellenmiş StarDisplay
 function StarDisplay({ rating }: { rating: number }) {
-  // 0-10 arası değeri 0-5'e çevir
   const valueIn5Scale = rating / 2;
   const normalizedValue = Math.max(0, Math.min(5, valueIn5Scale));
   const rounded = Math.round(normalizedValue * 2) / 2;
@@ -37,24 +36,31 @@ function StarDisplay({ rating }: { rating: number }) {
 
   return (
     <div className="flex items-center gap-0.5">
+      {/* Tam Yıldızlar */}
       {Array.from({ length: fullStars }).map((_, i) => (
-        <span key={`full-${i}`} className="text-green-500 text-lg">
+        <span key={`full-${i}`} className="text-green-500 text-[13px] leading-none">
           ★
         </span>
       ))}
+
+      {/* Yarım Yıldız - Hassas Hizalama */}
       {hasHalfStar && (
-        <span className="relative inline-flex w-4 h-4">
-          <span className="absolute inset-0 text-gray-600 text-lg">★</span>
+        <span className="relative inline-flex w-[13px] h-[13px] items-center justify-center leading-none">
+          {/* Alttaki Gri Yıldız */}
+          <span className="text-gray-600 text-[13px]">★</span>
+          {/* Üstteki Yeşil Parça */}
           <span
-            className="absolute inset-0 overflow-hidden"
-            style={{ width: "50%" }}
+            className="absolute inset-0 overflow-hidden flex items-center shadow-none"
+            style={{ width: "44%" }} // 50% bazen fonttan dolayı fazla kaçabiliyor, 45% daha estetik durur
           >
-            <span className="text-green-500 text-lg">★</span>
+            <span className="text-green-500 text-[13px]">★</span>
           </span>
         </span>
       )}
+
+      {/* Boş Yıldızlar */}
       {Array.from({ length: emptyStars }).map((_, i) => (
-        <span key={`empty-${i}`} className="text-gray-600 text-lg">
+        <span key={`empty-${i}`} className="text-gray-600 text-[13px] leading-none">
           ★
         </span>
       ))}
@@ -63,7 +69,7 @@ function StarDisplay({ rating }: { rating: number }) {
 }
 
 function getBookCover(book: Book | null): string {
-  if (!book) return "";
+  if (!book) return "https://placehold.co/400x600/1f1f1f/404040?text=Kapak+Yok";
   const imageLinks = book.volumeInfo?.imageLinks || {};
   const rawImageUrl =
     imageLinks.extraLarge ||
@@ -86,71 +92,60 @@ export default function ReviewCard({ review, book, profile }: ReviewCardProps) {
   const avatarUrl = profile.avatarUrl || "/dex.png";
 
   return (
-    <div className="bg-neutral-900/50 border border-white/10 rounded-lg p-6 hover:border-white/20 transition-colors shadow-lg">
-      {/* Profil Bilgileri */}
-     
-
-      {/* İnceleme İçeriği */}
-      <div className="flex gap-6">
+    /* Genişliği max-w-6xl yaparak daha geniş bir alan sağladık */
+    <div className="w-full max-w-6xl bg-neutral-900/50 border border-white/10 rounded-lg p-6 hover:border-white/20 transition-all shadow-lg">
+      <div className="flex gap-8"> {/* Gap'i de 8 yaparak ferahlattık */}
         {/* Kitap Kapağı */}
-        <Link href={`/books/${review.bookId}`}>
-          <div className="flex-shrink-0 w-32 h-48 bg-neutral-800 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors">
-            {coverUrl ? (
-              <Image
-                src={coverUrl}
-                alt={title}
-                width={128}
-                height={192}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
-                Kapak Yok
-              </div>
-            )}
+        <Link href={`/books/${review.bookId}`} className="flex-shrink-0">
+          <div className="w-40 h-56 bg-neutral-800 rounded-lg overflow-hidden border border-white/30 shadow-md group">
+            <Image
+              src={coverUrl}
+              alt={title}
+              width={160} // Genişliği biraz artırdık
+              height={224}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              unoptimized // Google resimlerinde bazen optimizasyon hatası verebilir
+            />
           </div>
         </Link>
 
         {/* İnceleme Detayları */}
-        <div className="flex-1 flex flex-col gap-2">
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/5">
             <Link href={`/p/${encodeURIComponent(profile.username)}`}>
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
+              <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20">
                 <Image
-                src={avatarUrl}
-                alt={displayName}
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
+                  src={avatarUrl}
+                  alt={displayName}
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover"
                 />
               </div>
             </Link>
-
             <Link
               href={`/p/${encodeURIComponent(profile.username)}`}
-              className="hover:text-gray-300 transition-colors"
+              className="text-white font-semibold text-lg hover:text-green-500 transition-colors"
             >
-              <span className="text-white font-medium">{displayName}</span>
-          </Link>
-        </div>
-          <div>
+              {displayName}
+            </Link>
+          </div>
+
+          <div className="mb-2">
             <Link href={`/books/${review.bookId}`}>
-              <h2 className="text-2xl font-bold text-white hover:text-gray-300 transition-colors mb-1">
+              <h2 className="text-3xl font-bold text-white hover:text-gray-300 transition-colors leading-tight mb-1">
                 {title}
               </h2>
             </Link>
-            {year && <p className="text-gray-400 text-sm">{year}</p>}
+            <div className="flex items-center gap-3">
+              {year && <span className="text-gray-400 text-sm">{year}</span>}
+              <StarDisplay rating={review.rating} />
+            </div>
           </div>
 
-          {/* Yıldız Puanı */}
-          <div className="flex items-center gap-3 mt-1">
-            <StarDisplay rating={review.rating} />
-          </div>
-
-          {/* İnceleme Metni */}
-          <div className="mt-3">
-            <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-              {review.review}
+          <div className="mt-4">
+            <p className="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap italic">
+              "{review.review}"
             </p>
           </div>
         </div>
@@ -158,4 +153,3 @@ export default function ReviewCard({ review, book, profile }: ReviewCardProps) {
     </div>
   );
 }
-
