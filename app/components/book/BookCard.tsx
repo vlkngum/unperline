@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Check, Plus, MoreHorizontal } from "lucide-react";
 
 type StaticRating = {
-  value: number; // 0-5
+  value: number; // 0-10 (ReviewModal'dan gelen değer)
   count?: number; // optional vote count
 };
 
@@ -90,21 +90,24 @@ export default function BookCard({ book, rating }: { book: any; rating?: StaticR
       </Link>
       {/* Başlık + puan her zaman kapak altında görünsün */}
       <div className="mt-2 space-y-1">
-        <h2 className="text-sm font-medium text-white truncate">
+        <h2 className="text-xs font-medium text-white truncate">
           {title}
         </h2>
         {rating && (
           (() => {
-            const rounded = Math.round(rating.value * 2) / 2; // 0.5 adımlarına yuvarla
+            const valueIn5Scale = rating.value / 2;
+            const normalizedValue = Math.max(0, Math.min(5, valueIn5Scale));
+            const rounded = Math.round(normalizedValue * 2) / 2; 
             const fullStars = Math.floor(rounded);
             const hasHalfStar = rounded - fullStars >= 0.5;
             const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            
             return (
-              <div className="flex items-center justify-between text-[11px] text-yellow-300">
+              <div className="flex items-center justify-between text-[11px] text-green-500">
                 <div className="flex items-center gap-0.5">
                   <span className="flex">
                     {Array.from({ length: fullStars }).map((_, i) => (
-                      <span key={`full-${i}`} className="text-yellow-300">
+                      <span key={`full-${i}`} className="text-green-500">
                         ★
                       </span>
                     ))}
@@ -113,34 +116,20 @@ export default function BookCard({ book, rating }: { book: any; rating?: StaticR
                         key="half"
                         className="relative inline-flex w-3 h-3 mx-[1px]"
                       >
-                        {/* Gri tam yıldız */}
-                        <span className="absolute inset-0 text-gray-600">
-                          ★
+                        <span className="absolute inset-0 text-green-500">
+                          ☆
                         </span>
-                        {/* Sol yarısı sarı yıldız */}
                         <span
                           className="absolute inset-0 overflow-hidden"
-                          style={{ width: "40%" }}
+                          style={{ width: "50%" }}
                         >
-                          <span className="text-yellow-300">★</span>
+                          <span className="text-green-500">★</span>
                         </span>
                       </span>
                     )}
-                    {Array.from({ length: emptyStars }).map((_, i) => (
-                      <span key={`empty-${i}`} className="text-gray-600">
-                        ☆
-                      </span>
-                    ))}
-                  </span>
-                  <span className="text-[10px] text-gray-200">
-                    {rounded.toFixed(1)}
+                    
                   </span>
                 </div>
-                {rating.count && (
-                  <span className="text-[10px] text-gray-400">
-                    ({rating.count.toLocaleString()} oy)
-                  </span>
-                )}
               </div>
             );
           })()

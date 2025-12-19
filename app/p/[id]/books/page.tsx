@@ -8,59 +8,12 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Pencil } from "lucide-react";
 import BookCard from "../../../components/book/BookCard";
-
-// Statik, örnek puanlar (sonradan dinamik veriye bağlanabilir)
-const STATIC_BOOK_RATINGS: Record<
-  string,
-  {
-    value: number; // 0-5 arası puan
-    count?: number; // oy sayısı (isteğe bağlı)
-  }
-> = {
-  zyTCAlFPjgYC: { value: 4.8, count: 1245 },
-  "1wy49i-gQjIC": { value: 4.2, count: 532 },
-  m8dPPgAACAAJ: { value: 3.9, count: 210 },
-  yZ1VDwAAQBAJ: { value: 4.5, count: 987 },
-  uW8oEAAAQBAJ: { value: 4.0, count: 321 },
-  eLRhEAAAQBAJ: { value: 4.7, count: 764 },
-  "xv8sAAAAYAAJ": { value: 3.6, count: 89 },
-  tQ8IAQAAMAAJ: { value: 4.1, count: 145 },
-  "QrkEAQAAIAAJ": { value: 4.9, count: 2031 },
-  OEBaEAAAQBAJ: { value: 3.8, count: 156 },
-  jRvQByotUY4C: { value: 4.3, count: 102 },
-};
-
-const FAVORITE_IDS = [
-  "zyTCAlFPjgYC",
-  "m8dPPgAACAAJ",
-  "yZ1VDwAAQBAJ",
-  "uW8oEAAAQBAJ",
-  "eLRhEAAAQBAJ",
-  "QrkEAQAAIAAJ",
-  "OEBaEAAAQBAJ",
-  "PGR2AwAAQBAJ",
-  "uWbFDAAAQBAJ",
-  "v1o_AAAAYAAJ",
-];
-
-const RECENT_IDS = [
-  "1wy49i-gQjIC",
-  "xv8sAAAAYAAJ",
-  "uW8oEAAAQBAJ",
-  "tQ8IAQAAMAAJ",
-  "m8dPPgAACAAJ",
-  "WrOQLV6xB-wC",
-  "bU5VAAAAYAAJ",
-  "zYwYxQEACAAJ",
-  "WfanDwAAQBAJ",
-  "k8Z0CAAAQBAJ",
-];
+import Select from "react-select";
 
 async function fetchBookById(id: string): Promise<Book | null> {
   try {
     const res = await fetch(
-      `https://www.googleapis.com/books/v1/volumes/${id}`,
-      { next: { revalidate: 300 } }
+      `https://www.googleapis.com/books/v1/volumes/${id}`
     );
     if (!res.ok) return null;
     return await res.json();
@@ -74,156 +27,146 @@ async function fetchBooksByIds(ids: string[]): Promise<Book[]> {
   return results.filter(Boolean) as Book[];
 }
 
-function ProfileHeader({
-  profileId,
-  isOwner,
-  bannerUrl,
-  profileImage,
-  stats,
-  description,
-}: {
-  profileId: string;
-  isOwner: boolean;
-  bannerUrl: string;
-  profileImage: string;
-  stats: { books: number; followers: number; following: number };
-  description?: string;
-}) {
-  return (
-    <header className="border-b border-white/10 w-full relative">
-      <div className="relative w-full">
-        {/* Banner */}
-        <div className="h-48 md:h-96 w-full  overflow-hidden ring-1 ring-white/5 shadow-2xl absolute top-0 ">
-          <Image
-            src={bannerUrl}
-            alt="banner"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        </div>
+type ProfileData = {
+  id: number;
+  username: string;
+  fullName?: string | null;
+  avatarUrl?: string | null;
+  bannerUrl?: string | null;
+  bio?: string | null;
+};
 
-        {/* Avatar + info */}
-        <div className="flex flex-col md:flex-row items-start md:items-end gap-4 md:gap-6 -mt-12 md:-mt-16 relative z-10 ">
-          <div className="pt-64">
-            <Image
-              src={profileImage}
-              alt="Avatar"
-              width={144}
-              height={144}
-              className="w- object-cover w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl bg-neutral-800 flex-shrink-0"
-            />
-          </div>
-
-          <div className="flex-1 flex flex-col md:flex-row md:items-end md:justify-between gap-4 w-full">
-            <div className="space-y-2 flex-1">
-              <h1 className="text-2xl md:text-3xl font-semibold text-white">
-                {profileId}
-              </h1>
-            </div>
-
-            <div className="flex gap-6 text-sm text-gray-300 md:ml-auto">
-              <span>
-                <b className="text-white">{stats.books}</b> Kitap
-              </span>
-              <span>
-                <b className="text-white">{stats.followers}</b> Takipçi
-              </span>
-              <span>
-                <b className="text-white">{stats.following}</b> Takip
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="w-full flex justify-between">
-          <div className="flex-1 w-xl flex justify-start items-center ">
-            {description && (
-              <p className="text-gray-400 text-sm md:text-base max-w-2xl">
-                {description}
-              </p>
-            )}
-          </div>
-          {isOwner && (
-            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black font-italic hover:bg-gray-100 transition shadow-md">
-              <Pencil size={16} />
-              <span className="font-italic">Profili Düzenle</span>
-            </button>
-          )}
-        </div>
-      </div>
-    </header>
-  );
-}
+ 
 
 type SortKey = "title_asc" | "title_desc" | "date_new" | "date_old";
+
+const SORT_OPTIONS = [
+  { value: "date_new", label: "En yeni" },
+  { value: "date_old", label: "En eski" },
+  { value: "title_asc", label: "İsme göre (A-Z)" },
+  { value: "title_desc", label: "İsme göre (Z-A)" },
+];
+
+const customSelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: "rgb(23, 23, 23)",
+    borderColor: state.isFocused ? "rgba(255, 255, 255, 0.3)" : "rgba(255, 255, 255, 0.1)",
+    borderRadius: "0.375rem",
+    padding: "0.125rem",
+    minHeight: "auto",
+    boxShadow: state.isFocused ? "0 0 0 2px rgba(255, 255, 255, 0.3)" : "none",
+    "&:hover": {
+      borderColor: "rgba(255, 255, 255, 0.2)",
+    },
+  }),
+  menu: (base: any) => ({
+    ...base,
+    backgroundColor: "rgb(23, 23, 23)",
+    borderRadius: "0.375rem",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    marginTop: "0.25rem",
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? "rgba(255, 255, 255, 0.1)"
+      : state.isFocused
+      ? "rgba(255, 255, 255, 0.05)"
+      : "transparent",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "0.875rem",
+    padding: "0.5rem 0.75rem",
+    "&:active": {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
+  }),
+  singleValue: (base: any) => ({
+    ...base,
+    color: "#ffffff",
+    fontSize: "0.875rem",
+  }),
+  input: (base: any) => ({
+    ...base,
+    color: "#ffffff",
+  }),
+  placeholder: (base: any) => ({
+    ...base,
+    color: "#9ca3af",
+  }),
+  indicatorSeparator: () => ({
+    display: "none",
+  }),
+  dropdownIndicator: (base: any) => ({
+    ...base,
+    color: "#9ca3af",
+    "&:hover": {
+      color: "#ffffff",
+    },
+  }),
+};
 
 export default function ProfileBooksPage() {
   const params = useParams();
   const profileId = params?.id?.toString() || "profil";
   const { data: session } = useSession();
-  const [favoriteBooks, setFavoriteBooks] = useState<Book[]>([]);
-  const [recentBooks, setRecentBooks] = useState<Book[]>([]);
+  const [allBooks, setAllBooks] = useState<Book[]>([]);
+  const [bookRatings, setBookRatings] = useState<
+    Record<
+      string,
+      {
+        value: number;
+        count?: number;
+      }
+    >
+  >({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>("date_new");
+  const [profile, setProfile] = useState<ProfileData | null>(null);
 
-  const isOwner = (() => {
-    const sessionName = session?.user?.name?.toString().toLowerCase();
-    const sessionEmail = session?.user?.email?.toString().toLowerCase();
-    const pid = profileId.toLowerCase();
-    return (
-      !!session &&
-      (sessionName === pid || sessionEmail?.split("@")[0] === pid)
-    );
-  })();
+   
 
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const [favorites, recent] = await Promise.all([
-        fetchBooksByIds(FAVORITE_IDS),
-        fetchBooksByIds(RECENT_IDS),
-      ]);
-      setFavoriteBooks(favorites);
-      setRecentBooks(recent);
-      setLoading(false);
+      try { 
+        const res = await fetch(`/api/p/${encodeURIComponent(profileId)}/books`, {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          console.error("Kullanıcı kitapları yüklenemedi");
+          setLoading(false);
+          return;
+        }
+
+        const data = await res.json();
+        const bookIds: string[] = data.readBooks || [];
+        const ratings = data.bookRatings || {};
+        const profileData = data.profile;
+
+        setProfile(profileData);
+        setBookRatings(ratings);
+
+        // Kitap ID'lerini kullanarak Google Books API'den kitap bilgilerini çek
+        if (bookIds.length > 0) {
+          const books = await fetchBooksByIds(bookIds);
+          setAllBooks(books);
+        } else {
+          setAllBooks([]);
+        }
+      } catch (error) {
+        console.error("Kitaplar yüklenirken hata:", error);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
-  }, []);
+  }, [profileId]);
 
-  const tabs = [
-    {
-      id: "overview",
-      label: "Genel Bakış",
-      href: `/p/${encodeURIComponent(profileId)}`,
-    },
-    {
-      id: "books",
-      label: "Kitaplar",
-      href: `/p/${encodeURIComponent(profileId)}/books`,
-    },
-    {
-      id: "reviews",
-      label: "İncelemeler",
-      href: `/p/${encodeURIComponent(profileId)}/reviews`,
-    },
-    {
-      id: "likes",
-      label: "Beğeniler",
-      href: `/p/${encodeURIComponent(profileId)}/likes`,
-    },
-  ];
+  
 
-  const allBooks: Book[] = useMemo(() => {
-    const map = new Map<string, Book>();
-    [...favoriteBooks, ...recentBooks].forEach((b) => {
-      if (b?.id && !map.has(b.id)) {
-        map.set(b.id, b);
-      }
-    });
-    return Array.from(map.values());
-  }, [favoriteBooks, recentBooks]);
 
   const sortedBooks: Book[] = useMemo(() => {
     const booksCopy = [...allBooks];
@@ -261,41 +204,6 @@ export default function ProfileBooksPage() {
   return (
     <div className="min-h-screen text-white w-full">
       <div className="max-w-6xl mx-auto w-full">
-        <ProfileHeader
-          profileId={profileId}
-          isOwner={isOwner}
-          bannerUrl="/dex2.jpg"
-          profileImage="/dex.png"
-          stats={{
-            books: sortedBooks.length || allBooks.length || 128,
-            followers: 45,
-            following: 32,
-          }}
-          description="Kitap sever, okuma tutkunu. Her gün yeni bir hikaye keşfediyorum."
-        />
-
-        <div className="border-b border-white/10 bg-neutral-950 w-full">
-          <div className="px-4">
-            <nav className="flex gap-1 -mb-px">
-              {tabs.map((tab) => {
-                const isActive = tab.id === "books";
-                return (
-                  <Link
-                    key={tab.id}
-                    href={tab.href}
-                    className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-                      isActive
-                        ? "border-white text-white"
-                        : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
-                    }`}
-                  >
-                    {tab.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
 
         <div className="px-4 py-8 space-y-8 w-full">
           {loading ? (
@@ -313,16 +221,15 @@ export default function ProfileBooksPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-gray-400">Sırala:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortKey)}
-                    className="bg-neutral-900 border border-white/10 rounded-md px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/30"
-                  >
-                    <option value="date_new">En yeni</option>
-                    <option value="date_old">En eski</option>
-                    <option value="title_asc">İsme göre (A-Z)</option>
-                    <option value="title_desc">İsme göre (Z-A)</option>
-                  </select>
+                  <div className="w-48">
+                    <Select
+                      value={SORT_OPTIONS.find(opt => opt.value === sortBy)}
+                      onChange={(option) => setSortBy(option?.value as SortKey)}
+                      options={SORT_OPTIONS}
+                      styles={customSelectStyles}
+                      isSearchable={false}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -331,7 +238,7 @@ export default function ProfileBooksPage() {
                   <div key={book.id}>
                     <BookCard
                       book={book}
-                      rating={STATIC_BOOK_RATINGS[book.id]}
+                      rating={bookRatings[book.id]}
                     />
                   </div>
                 ))}
