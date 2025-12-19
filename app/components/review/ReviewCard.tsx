@@ -38,29 +38,29 @@ function StarDisplay({ rating }: { rating: number }) {
     <div className="flex items-center gap-0.5">
       {/* Tam Yıldızlar */}
       {Array.from({ length: fullStars }).map((_, i) => (
-        <span key={`full-${i}`} className="text-green-500 text-[13px] leading-none">
+        <span key={`full-${i}`} className="text-green-500 text-[16px] leading-none">
           ★
         </span>
       ))}
 
       {/* Yarım Yıldız - Hassas Hizalama */}
       {hasHalfStar && (
-        <span className="relative inline-flex w-[13px] h-[13px] items-center justify-center leading-none">
+        <span className="relative inline-flex w-[16px] h-[16px] items-center justify-center leading-none">
           {/* Alttaki Gri Yıldız */}
-          <span className="text-gray-600 text-[13px]">★</span>
+          <span className="text-gray-600 text-[16px]">★</span>
           {/* Üstteki Yeşil Parça */}
           <span
             className="absolute inset-0 overflow-hidden flex items-center shadow-none"
             style={{ width: "44%" }} // 50% bazen fonttan dolayı fazla kaçabiliyor, 45% daha estetik durur
           >
-            <span className="text-green-500 text-[13px]">★</span>
+            <span className="text-green-500 text-[16px]">★</span>
           </span>
         </span>
       )}
 
       {/* Boş Yıldızlar */}
       {Array.from({ length: emptyStars }).map((_, i) => (
-        <span key={`empty-${i}`} className="text-gray-600 text-[13px] leading-none">
+        <span key={`empty-${i}`} className="text-gray-600 text-[16px] leading-none">
           ★
         </span>
       ))}
