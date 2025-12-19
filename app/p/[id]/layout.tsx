@@ -17,6 +17,11 @@ type ProfileData = {
   bio?: string | null;
   pronouns?: string | null;
   favoriteBooks: string[];
+  stats?: {
+    books: number;
+    followers: number;
+    following: number;
+  };
 };
 
 export default function ProfileLayout({
@@ -29,6 +34,9 @@ export default function ProfileLayout({
   const profileId = params?.id?.toString() || "profil";
   const { data: session } = useSession();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const isOwner = useMemo(() => {
     const sessionName = session?.user?.name?.toString().toLowerCase();
@@ -40,9 +48,23 @@ export default function ProfileLayout({
   // Profil verisini backend'den çek
   useEffect(() => {
     async function loadProfile() {
+      setLoading(true);
+      setError(null);
       try {
-        const res = await fetch("/api/profile", { cache: "no-store" });
-        if (!res.ok) return;
+        const res = await fetch(`/api/p/${encodeURIComponent(profileId)}/profile`, {
+          cache: "no-store",
+        });
+        
+        if (!res.ok) {
+          if (res.status === 404) {
+            setError("Bu kullanıcı bulunamadı");
+          } else {
+            setError("Profil yüklenirken bir hata oluştu");
+          }
+          setLoading(false);
+          return;
+        }
+        
         const data: ProfileData = await res.json();
         setProfile({
           ...data,
@@ -50,38 +72,26 @@ export default function ProfileLayout({
         });
       } catch (e) {
         console.error("Profil yüklenirken hata:", e);
+        setError("Profil yüklenirken bir hata oluştu");
+      } finally {
+        setLoading(false);
       }
     }
 
-    if (session?.user?.id) {
-      loadProfile();
+    loadProfile();
+  }, [profileId]); 
+
+  const handleFollow = async () => {
+    if (!session) {
+      return;
     }
-  }, [session?.user?.id, pathname]); // pathname değiştiğinde de yenile
-
-  // Sayfa focus aldığında profil verisini yenile (profile edit'ten dönünce güncellenmesi için)
-  useEffect(() => {
-    const handleFocus = () => {
-      if (session?.user?.id) {
-        async function refreshProfile() {
-          try {
-            const res = await fetch("/api/profile", { cache: "no-store" });
-            if (!res.ok) return;
-            const data: ProfileData = await res.json();
-            setProfile({
-              ...data,
-              favoriteBooks: (data.favoriteBooks || []).slice(0, 4),
-            });
-          } catch (e) {
-            console.error("Profil yenilenirken hata:", e);
-          }
-        }
-        refreshProfile();
-      }
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [session?.user?.id]);
+    
+    try {
+      setIsFollowing(!isFollowing);
+    } catch (e) {
+      console.error("Takip işlemi başarısız:", e);
+    }
+  };
 
   const tabs = [
     { id: "overview", label: "Genel Bakış", href: `/p/${encodeURIComponent(profileId)}` },
@@ -98,19 +108,52 @@ export default function ProfileLayout({
     return "overview";
   }, [pathname]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen text-white w-full flex items-center justify-center">
+        <p className="text-gray-500">Yükleniyor…</p>
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen text-white w-full flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-2">{error || "Kullanıcı bulunamadı"}</p>
+          <p className="text-gray-500 text-sm">
+            <span className="font-semibold">{profileId}</span> isimli bir kullanıcı bulunamadı.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen text-white w-full">
       <div className="max-w-6xl mx-auto w-full">
         <ProfileHeader
           profile={{
-            profileId: profile?.username || profileId,
+            profileId: profile.username,
+            profileName: profile.fullName ?? "",
             isOwner,
-            bannerUrl: profile?.bannerUrl || "/dex2.jpg",
-            profileImage: profile?.avatarUrl || "/dex.png",
-            description:
-              profile?.bio ||
-              "Kitap sever, okuma tutkunu. Her gün yeni bir hikaye keşfediyorum.",
+            bannerUrl: profile.bannerUrl ?? "",
+            profileImage: profile.avatarUrl  ?? "",
+            description: profile.bio ?? "",
             editHref: isOwner ? `/profile/edit` : undefined,
+            followButton: !isOwner && session ? (
+              <button
+                onClick={handleFollow}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  isFollowing
+                    ? "bg-neutral-800 text-white border border-white/20 hover:bg-neutral-700"
+                    : "bg-white text-black hover:bg-gray-100"
+                }`}
+              >
+                {isFollowing ? "Takipten Çık" : "Takip Et"}
+              </button>
+            ) : undefined,
+            stats: profile.stats || DEFAULT_PROFILE_STATS,
           }}
         />
 

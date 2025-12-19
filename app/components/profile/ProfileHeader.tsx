@@ -19,12 +19,14 @@ export const DEFAULT_PROFILE_STATS: ProfileStats = {
 
 export type ProfileHeaderData = {
   profileId: string;
+  profileName: string;
   isOwner: boolean;
   bannerUrl: string;
   profileImage: string;
   stats?: ProfileStats; // Artık optional, default değerler kullanılacak
   description?: string;
   editHref?: string;
+  followButton?: React.ReactNode;
 };
 
 export type ProfileHeaderProps = {
@@ -34,35 +36,36 @@ export type ProfileHeaderProps = {
 export default function ProfileHeader({ profile }: ProfileHeaderProps) {
   const {
     profileId,
+    profileName,
     isOwner,
     bannerUrl,
     profileImage,
-    stats = DEFAULT_PROFILE_STATS, // Default stats kullanılıyor
+    stats = DEFAULT_PROFILE_STATS,  
     description,
     editHref,
+    followButton,
   } = profile;
   return (
     <header className="border-b border-white/10 w-full relative">
-      <div className="relative w-full">
-        {/* Banner with overlay content */}
-        <div className="relative h-64 md:h-[400px] w-full overflow-hidden ring-1 ring-white/5 shadow-2xl">
-          <Image
-            src={bannerUrl}
-            alt="banner"
-            fill
-            className="object-cover"
-            priority
-          />
-          {/* Gradient overlays for better text readability */}
+      <div className="relative w-full"> 
+        <div className={`relative w-full overflow-hidden ${bannerUrl ? "h-64 md:h-[400px] ring-1 ring-white/5 shadow-2xl" : "h-24 md:h-[300px]"}`}>
+          {bannerUrl && (
+            <Image
+              src={bannerUrl}
+              alt="banner"
+              fill
+              className="object-cover"
+              priority
+            /> 
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
-          
-          {/* Content overlay on banner */}
-          <div className="absolute inset-0 flex flex-col justify-end pb-6 md:pb-8 px-4 md:px-6">
-            {/* Avatar + Username + Stats */}
-            <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-8 relative z-10">
-              {/* Avatar */}
+           
+          <div className="absolute inset-0 flex flex-col justify-end pb-6 md:pb-8 px-4 md:px-6"> 
+            <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-8 relative z-10"> 
               <div className="flex-shrink-0 -mt-16 md:-mt-20">
+                
+              {profileImage && (
                 <Image
                   src={profileImage}
                   alt="Avatar"
@@ -70,9 +73,9 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
                   height={144}
                   className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl bg-neutral-800 object-cover"
                 />
+              )}
               </div>
-
-              {/* Username + Stats */}
+ 
               <div className="flex-1 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 w-full">
                 <div className="space-y-3 flex-1">
                   <h1 className="text-2xl md:text-3xl font-semibold text-white drop-shadow-lg">
@@ -96,14 +99,19 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
             
             {/* Description + Edit Button */}
             <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mt-4 md:mt-6 relative z-10">
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
+                {profileName && (
+                    <h1 className="text-sm md:text-md font-semibold text-white drop-shadow-lg">
+                      {profileName}
+                    </h1>
+                  )}
+
                 {description && (
                   <p className="text-gray-200 text-sm md:text-base max-w-2xl leading-relaxed drop-shadow-md">
                     {description}
                   </p>
                 )}
-              </div>
-              {/* Düzenleme butonu ayrı sayfaya yönlendiriyor */}
+              </div> 
               {isOwner && editHref && (
                 <Link
                   href={editHref}
@@ -112,6 +120,11 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
                   <Pencil size={16} />
                   <span>Profili Düzenle</span>
                 </Link>
+              )}
+              {followButton && (
+                <div className="flex-shrink-0">
+                  {followButton}
+                </div>
               )}
             </div>
           </div>
