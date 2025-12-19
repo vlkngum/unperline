@@ -79,16 +79,14 @@ export default function ProfileLayout({
     }
 
     loadProfile();
-  }, [profileId, pathname]);
+  }, [profileId]); 
 
   const handleFollow = async () => {
     if (!session) {
-      // Giriş yapmamış kullanıcı için login sayfasına yönlendir
       return;
     }
     
     try {
-      // TODO: Takip et/takipten çık API'si eklenecek
       setIsFollowing(!isFollowing);
     } catch (e) {
       console.error("Takip işlemi başarısız:", e);
