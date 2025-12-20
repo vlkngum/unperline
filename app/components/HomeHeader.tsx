@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-// Import yolunu kendi yapına göre düzeltirsin
 import AuthModal from "./AuthModal"; 
 
 interface HomeHeaderProps {
@@ -11,7 +10,6 @@ interface HomeHeaderProps {
 
 export default function HomeHeader({ currentUser }: HomeHeaderProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  // Modal açılırken hangi modda (login/register) açılacağını tutmak için:
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
 
   const { data: session } = useSession();
@@ -19,7 +17,6 @@ export default function HomeHeader({ currentUser }: HomeHeaderProps) {
   const sessionUser = session?.user;
   const user = currentUser || sessionUser;
 
-  // Modal açma yardımcısı
   const openAuthModal = (mode: "login" | "register") => {
     setAuthMode(mode);
     setIsAuthModalOpen(true);

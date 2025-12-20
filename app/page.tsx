@@ -31,9 +31,8 @@ async function getBooksForCategory(query: string) {
 
 async function getFriendsBooks() {
   try {
-    // Server component'te direkt API route'u import edebiliriz veya fetch ile çağırabiliriz
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                    (typeof window === 'undefined' ? 'http://localhost:3000' : '');
+      (typeof window === 'undefined' ? 'http://localhost:3000' : '');
     
     const url = baseUrl 
       ? `${baseUrl}/api/friends/books`
@@ -81,7 +80,6 @@ export default async function Page() {
     getFriendsBooks(),
   ]);
 
-  // Friends books için kitap detaylarını çek (ilk 8)
   const friendsBooksWithData = friendsBooksData.slice(0, 8);
   const friendsBooks = await Promise.all(
     friendsBooksWithData.map(async (item: any) => {
@@ -140,7 +138,6 @@ export default async function Page() {
           </section>
         )}
 
-        {/* Diğer kategoriler */}
         {categories.map((category, index) => {
           const books = categoryResults[index];
           if (books && books.length > 0) {

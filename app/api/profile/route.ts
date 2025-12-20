@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
-// Mevcut kullanıcının profilini getir
 export async function GET() {
   try {
     const session = await auth();
@@ -14,7 +13,6 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      // select tüm alanları tip güvenli şekilde alıyor; firstName/lastName dâhil
     });
 
     if (!user) {
@@ -31,7 +29,6 @@ export async function GET() {
   }
 }
 
-// Profil alanlarını güncelle
 export async function PUT(req: Request) {
   try {
     const session = await auth();

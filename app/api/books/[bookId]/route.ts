@@ -26,12 +26,10 @@ export async function POST(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Dizileri kopyala
     let updatedReadBooks = [...user.readBooks];
     let updatedReadList = [...user.readList];
     let updatedLikedBooks = [...user.likedBooks];
 
-    // Rating yapısı artık { rating, review, liked, isFirstTime }
     let updatedRatings: Record<
       string,
       { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }
@@ -40,7 +38,6 @@ export async function POST(
         ? (user.bookRatings as Record<string, { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }>)
         : {};
 
-    // *** READ ***
     if (action === "read") {
       if (updatedReadBooks.includes(bookId)) {
         updatedReadBooks = updatedReadBooks.filter((id) => id !== bookId);
@@ -53,7 +50,6 @@ export async function POST(
       }
     }
 
-    // *** LIKE ***
     else if (action === "like") {
       if (updatedLikedBooks.includes(bookId)) {
         updatedLikedBooks = updatedLikedBooks.filter((id) => id !== bookId);
@@ -64,7 +60,6 @@ export async function POST(
       }
     }
 
-    // *** READ LIST ***
     else if (action === "readList") {
       if (updatedReadList.includes(bookId)) {
         updatedReadList = updatedReadList.filter((id) => id !== bookId);
@@ -73,7 +68,6 @@ export async function POST(
       }
     }
 
-    // *** RATING + REVIEW ***
     else if (action === "rate") {
       if (rating === 0) {
         delete updatedRatings[bookId];
@@ -94,7 +88,6 @@ export async function POST(
       }
     }
 
-    // Güncelle
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {

@@ -1,7 +1,6 @@
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
-// URL'deki kullanıcı adına göre kullanıcının incelemelerini getir
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -10,13 +9,11 @@ export async function GET(
     const { id } = await params;
     const profileId = decodeURIComponent(id);
 
-    // Kullanıcıyı username veya email ile bul
     const user = await prisma.user.findFirst({
       where: {
         OR: [
           { username: profileId },
           { email: profileId },
-          // Email'in @ öncesi kısmı da kontrol edilir
           { email: { startsWith: `${profileId}@` } },
         ],
       },
@@ -56,7 +53,6 @@ export async function GET(
           >)
         : {};
 
-    // Sadece review metni olan kitapları filtrele
     const reviews: Array<{
       bookId: string;
       rating: number;
@@ -66,7 +62,6 @@ export async function GET(
     }> = [];
 
     Object.entries(ratings).forEach(([bookId, rating]) => {
-      // Review metni varsa ekle
       if (rating.review && rating.review.trim().length > 0) {
         reviews.push({
           bookId,

@@ -3,9 +3,7 @@
 import Image from "next/image";
 import Link from "next/link"; 
 
-// --- MOCK DATA ---
 const mockUsers = [
-  // FEATURED MEMBERS (İlk 5)
   {
     id: 1,
     name: "Derrick",
@@ -76,7 +74,6 @@ const mockUsers = [
     ],
     isFeatured: true,
   },
-  // ALL MEMBERS
   { id: 6, name: "Jay", username: "jay_walking", avatar: "https://i.pravatar.cc/150?u=jay", stats: { films: "1,704", lists: "80", likes: "1,025" }, isFeatured: false },
   { id: 7, name: "BenOfTheWeek", username: "benweek", avatar: "https://i.pravatar.cc/150?u=ben", stats: { films: "702", lists: "1", likes: "209" }, isFeatured: false },
   { id: 8, name: "Mak", username: "_mak_", avatar: "https://i.pravatar.cc/150?u=mak", stats: { films: "618", lists: "39", likes: "53" }, isFeatured: false },
@@ -93,12 +90,10 @@ export default function ConnectPlusPage() {
   return (
     <main className="min-h-screen text-slate-200 selection:bg-indigo-500/30">
       
-      {/* Dekoratif Arkaplan Işıltısı */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-indigo-900/20 blur-[120px] rounded-full pointer-events-none z-0" />
 
       <div className="relative z-10 max-w-7xl mx-auto bg-[#0B0E14] min-h-screen py-12 px-4 md:px-8 mb-20 space-y-16">
         
-        {/* --- HEADER --- */}
         <div className="text-center space-y-2">
           <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-lg">
             Connect<span className="text-indigo-500">+</span>
@@ -108,7 +103,6 @@ export default function ConnectPlusPage() {
           </p>
         </div>
 
-        {/* --- SECTION 1: FEATURED MEMBERS --- */}
         <section className="relative">
           <div className="flex items-center gap-4 mb-8">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
@@ -122,18 +116,15 @@ export default function ConnectPlusPage() {
             {featuredMembers.map((member) => (
               <div key={member.id} className="flex flex-col items-center relative p-2 rounded-xl transition-all duration-300 hover:bg-white/5">
                 
-                {/* 1. REVİZE: Profil Linki (Avatar ve İsim Grubu) */}
                 <Link href="#" className="flex flex-col items-center group mb-4 w-full">
-                    {/* Avatar */}
                     <div className="relative w-24 h-24 mb-3">
-                        {/* Glow Efekti */}
-                        <div className="absolute inset-0 bg-indigo-500 blur-md opacity-0 group-hover:opacity-40 transition-opacity rounded-full duration-500" />
+                      <div className="absolute inset-0 bg-indigo-500 blur-md opacity-0 group-hover:opacity-40 transition-opacity rounded-full duration-500" />
                         <Image
                             src={member.avatar}
                             alt={member.name}
                             fill
                             className="rounded-full object-cover border-[3px] border-slate-800 group-hover:border-indigo-500 transition-colors shadow-2xl relative z-10"
-                        />
+                      />
                     </div>
                     
                     {/* İsim & Username */}
@@ -145,19 +136,15 @@ export default function ConnectPlusPage() {
                     </div>
                 </Link>
 
-                {/* 2. REVİZE: İstatistikler (Kitap + Review yan yana) */}
                 <div className="flex items-center gap-2 mb-5 z-10">
-                    {/* Kitap Sayısı */}
                     <div className="text-[10px] uppercase tracking-wider text-indigo-300 font-semibold bg-indigo-950/60 px-2.5 py-1 rounded-full border border-indigo-500/20 shadow-sm">
                         {member.stats.films} Kitap
                     </div>
-                    {/* İnceleme Sayısı */}
                     <div className="text-[10px] uppercase tracking-wider text-slate-300 font-semibold bg-slate-800/60 px-2.5 py-1 rounded-full border border-slate-700/50 shadow-sm">
                         {member.stats.reviews} İnceleme
                     </div>
                 </div>
 
-                {/* 3. REVİZE: Favori Kitaplar (Her biri ayrı Link) */}
                 <div className="flex gap-1.5 justify-center w-full px-2">
                   {member.favorites?.map((cover, idx) => (
                     <Link 
@@ -167,7 +154,6 @@ export default function ConnectPlusPage() {
                     >
                         <div className="relative w-full h-full rounded-sm overflow-hidden shadow-lg border border-white/10 group-hover/book:border-indigo-500/50 transition-all duration-300 group-hover/book:-translate-y-1 group-hover/book:shadow-indigo-500/20">
                             <Image src={cover} alt="fav" fill className="object-cover" />
-                            {/* Üzerine hafif parlaklık */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-50 group-hover/book:opacity-0 transition-opacity" />
                         </div>
                     </Link>
@@ -178,7 +164,6 @@ export default function ConnectPlusPage() {
           </div>
         </section>
 
-        {/* --- SECTION 2: MEMBER DIRECTORY --- */}
         <section>
            <div className="flex justify-between items-end mb-4 border-b border-slate-800 pb-2 mx-2">
             <h2 className="text-sm font-bold text-slate-300 uppercase tracking-widest">

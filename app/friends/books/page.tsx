@@ -50,7 +50,6 @@ export default function FriendsBooksPage() {
         const data = await res.json();
         const friendBooksData: FriendBookData[] = data.books || [];
 
-        // Her kitap için detayları çek
         const booksWithDetails = await Promise.all(
           friendBooksData.map(async (item) => {
             const book = await fetchBookById(item.bookId);
@@ -64,7 +63,6 @@ export default function FriendsBooksPage() {
           })
         );
 
-        // Null olanları filtrele
         setBooks(booksWithDetails.filter(Boolean) as BookWithFriend[]);
       } catch (error) {
         console.error("Kitaplar yüklenirken hata:", error);

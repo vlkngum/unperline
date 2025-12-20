@@ -95,9 +95,7 @@ export default function ReviewModal({
       });
 
       if (res.ok) {
-        // Verileri yenile
         router.refresh();
-        // Modalı kapat
         onClose();
       }
     } catch (err) {

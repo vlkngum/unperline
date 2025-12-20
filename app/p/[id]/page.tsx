@@ -44,7 +44,6 @@ export default function ProfilePage() {
   const [recentBooks, setRecentBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Google Books vitrin verileri
   useEffect(() => {
     async function load() {
       setLoading(true);

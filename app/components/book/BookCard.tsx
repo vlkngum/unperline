@@ -6,8 +6,8 @@ import { Check, Plus, MoreHorizontal } from "lucide-react";
 import StarDisplay from "../ui/StarDisplay";
 
 type StaticRating = {
-  value: number; // 0-10 (ReviewModal'dan gelen değer)
-  count?: number; // optional vote count
+  value: number; 
+  count?: number; 
 };
 
 type FriendInfo = {
@@ -134,8 +134,7 @@ export default function BookCard({
               filledColor="green"
               emptyColor="gray"
             />
-          )}
-          {/* FriendInfo'da rating varsa onu göster */}
+          )} 
           {!rating && friendInfo?.rating && friendInfo.rating > 0 && friendInfo.rating != 0 &&(
             <StarDisplay 
               rating={friendInfo.rating} 
@@ -144,23 +143,20 @@ export default function BookCard({
               emptyColor="gray"
             />
           )}
-          
-          {/* Kullanıcı bilgisi */}
+           
           <Link
             href={`/p/${encodeURIComponent(friendInfo.username)}`}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            {friendInfo.avatarUrl && (
+          > 
               <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 flex-shrink-0"> 
                 <Image
-                  src={friendInfo.avatarUrl || ""}
+                  src={friendInfo.avatarUrl || "/dex.png"}
                   alt={friendInfo.fullName || friendInfo.username}
                   width={20}
                   height={20}
                   className="w-full h-full object-cover"
                 /> 
-              </div>
-            )}
+              </div> 
             <span className="text-xs font-bold text-gray-400 truncate">
               {friendInfo.fullName || friendInfo.username}
             </span>

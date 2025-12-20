@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { handleSignOut } from '@/app/lib/actions'
-// AuthModal'ı oluşturduğun yerden import et (Örn: components klasörü)
 import AuthModal from './AuthModal' 
 
 interface HeaderProps {
@@ -24,9 +23,8 @@ const LogoIcon = () => (
 
 export default function Header({ user }: HeaderProps) {
   const [query, setQuery] = useState('')
-  const [open, setOpen] = useState(false) // Profil dropdown'ı için
+  const [open, setOpen] = useState(false) 
   
-  // Auth Modal State'leri
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   

@@ -2,13 +2,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
-// Diğer kullanıcıların kitaplarını getir (kendisi hariç)
 export async function GET(req: Request) {
   try {
     const session = await auth();
     const currentUserId = session?.user?.id ? parseInt(session.user.id) : null;
 
-    // Tüm kullanıcıları getir (kendisi hariç)
     const users = await prisma.user.findMany({
       where: currentUserId
         ? {
@@ -24,12 +22,12 @@ export async function GET(req: Request) {
         bookRatings: true,
       },
       orderBy: {
-        createdAt: "desc", // En yeni kullanıcılar önce
+        createdAt: "desc", 
       },
-      take: 50, // İlk 50 kullanıcı
+      take: 50, 
     });
 
-    // Her kullanıcının kitaplarını topla
+   
     const allBooks: Array<{
       bookId: string;
       userId: number;
@@ -71,7 +69,6 @@ export async function GET(req: Request) {
       });
     });
 
-    // En son eklenen kitapları sırala (şimdilik rastgele, sonra tarih eklenebilir)
     const shuffled = allBooks.sort(() => Math.random() - 0.5);
 
     return NextResponse.json({

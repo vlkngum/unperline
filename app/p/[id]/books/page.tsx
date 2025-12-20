@@ -149,7 +149,6 @@ export default function ProfileBooksPage() {
         setProfile(profileData);
         setBookRatings(ratings);
 
-        // Kitap ID'lerini kullanarak Google Books API'den kitap bilgilerini çek
         if (bookIds.length > 0) {
           const books = await fetchBooksByIds(bookIds);
           setAllBooks(books);

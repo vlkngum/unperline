@@ -1,7 +1,6 @@
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
-// URL'deki kullanıcı adına göre kullanıcı profilini getir
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -10,13 +9,12 @@ export async function GET(
     const { id } = await params;
     const profileId = decodeURIComponent(id);
 
-    // Kullanıcıyı username veya email ile bul
     const user = await prisma.user.findFirst({
       where: {
         OR: [
           { username: profileId },
           { email: profileId },
-          // Email'in @ öncesi kısmı da kontrol edilir
+
           { email: { startsWith: `${profileId}@` } },
         ],
       },
@@ -57,8 +55,8 @@ export async function GET(
       favoriteBooks: user.favoriteBooks || [],
       stats: {
         books: user.readBooks?.length || 0,
-        followers: 0, // Şimdilik 0, sonra takipçi sistemi eklendiğinde güncellenebilir
-        following: 0, // Şimdilik 0, sonra takip sistemi eklendiğinde güncellenebilir
+        followers: 0, 
+        following: 0, 
       },
     });
   } catch (error: any) {

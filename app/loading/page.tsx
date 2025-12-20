@@ -1,4 +1,3 @@
-// app/loading.tsx - Sayfa yüklenirken gösterilecek skeleton
 
 export default function Loading() {
   return (

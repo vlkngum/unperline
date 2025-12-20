@@ -28,7 +28,7 @@ type ReviewCardProps = {
 
 
 function getBookCover(book: Book | null): string {
-  if (!book) return "";
+  if (!book) return "https://placehold.co/400x600/1f1f1f/404040?text=Kapak+Yok";
   const imageLinks = book.volumeInfo?.imageLinks || {};
   const rawImageUrl =
     imageLinks.extraLarge ||
@@ -51,56 +51,46 @@ export default function ReviewCard({ review, book, profile }: ReviewCardProps) {
   const avatarUrl = profile.avatarUrl || "/dex.png";
 
   return (
-    <div className="bg-neutral-900/50 border border-white/10 rounded-lg p-6 hover:border-white/20 transition-colors shadow-lg">
-      {/* Profil Bilgileri */}
-     
-
-      {/* İnceleme İçeriği */}
-      <div className="flex gap-6">
-        {/* Kitap Kapağı */}
-        <Link href={`/books/${review.bookId}`}>
-          <div className="flex-shrink-0 w-32 h-48 bg-neutral-800 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors">
-            {coverUrl ? (
-              <Image
-                src={coverUrl}
-                alt={title}
-                width={128}
-                height={192}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
-                Kapak Yok
-              </div>
-            )}
+    <div className="w-full max-w-6xl bg-neutral-900/50 border border-white/10 rounded-lg p-6 hover:border-white/20 transition-all shadow-lg">
+      <div className="flex gap-8"> 
+        <Link href={`/books/${review.bookId}`} className="flex-shrink-0">
+          <div className="w-40 h-56 bg-neutral-800 rounded-lg overflow-hidden border border-white/30 shadow-md group">
+            <Image
+              src={coverUrl}
+              alt={title}
+              width={160} 
+              height={224}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              unoptimized 
+            />
           </div>
         </Link>
 
         {/* İnceleme Detayları */}
-        <div className="flex-1 flex flex-col gap-2">
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/5">
             <Link href={`/p/${encodeURIComponent(profile.username)}`}>
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
+              <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20">
                 <Image
-                src={avatarUrl}
-                alt={displayName}
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
+                  src={avatarUrl}
+                  alt={displayName}
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover"
                 />
               </div>
             </Link>
-
             <Link
               href={`/p/${encodeURIComponent(profile.username)}`}
-              className="hover:text-gray-300 transition-colors"
+              className="text-white font-semibold text-lg hover:text-green-500 transition-colors"
             >
-              <span className="text-white font-medium">{displayName}</span>
-          </Link>
-        </div>
-          <div>
+              {displayName}
+            </Link>
+          </div>
+
+          <div className="mb-2">
             <Link href={`/books/${review.bookId}`}>
-              <h2 className="text-2xl font-bold text-white hover:text-gray-300 transition-colors mb-1">
+              <h2 className="text-3xl font-bold text-white hover:text-gray-300 transition-colors leading-tight mb-1">
                 {title}
               </h2>
             </Link>
@@ -109,18 +99,12 @@ export default function ReviewCard({ review, book, profile }: ReviewCardProps) {
 
           {/* Yıldız Puanı */}
           <div className="flex items-center gap-3 mt-1">
-            <StarDisplay 
-              rating={review.rating} 
-              starSize="w-5 h-5" 
-              filledColor="green"
-              emptyColor="gray"
-            />
+            <StarDisplay rating={review.rating} />
           </div>
 
-          {/* İnceleme Metni */}
-          <div className="mt-3">
-            <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-              {review.review}
+          <div className="mt-4">
+            <p className="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap italic">
+              "{review.review}"
             </p>
           </div>
         </div>
@@ -128,4 +112,3 @@ export default function ReviewCard({ review, book, profile }: ReviewCardProps) {
     </div>
   );
 }
-

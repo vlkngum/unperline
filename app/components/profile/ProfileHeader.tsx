@@ -10,7 +10,6 @@ export type ProfileStats = {
   following: number;
 };
 
-// Default stats değerleri - tek bir yerden yönetiliyor
 export const DEFAULT_PROFILE_STATS: ProfileStats = {
   books: 28,
   followers: 5,
@@ -23,7 +22,7 @@ export type ProfileHeaderData = {
   isOwner: boolean;
   bannerUrl: string;
   profileImage: string;
-  stats?: ProfileStats; // Artık optional, default değerler kullanılacak
+  stats?: ProfileStats; 
   description?: string;
   editHref?: string;
   followButton?: React.ReactNode;

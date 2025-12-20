@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react"; // BU IMPORT ÖNEMLİ
+import { signIn } from "next-auth/react"; 
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -53,7 +53,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
     onClose();
   };
 
-  // İŞTE SENİN İSTEDİĞİN GİRİŞ/KAYIT MANTIĞI BURADA
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -61,7 +60,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
 
     try {
       if (mode === "register") {
-        // 1. Kayıt Olma İsteği
         const res = await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -75,7 +73,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
           return;
         }
 
-        // 2. Kayıt Başarılıysa Otomatik Giriş Yap
         const loginRes = await signIn("credentials", {
           redirect: false,
           email,
@@ -88,7 +85,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
           return;
         }
       } else { 
-        // 3. Direkt Giriş Yapma (Login Modu)
         const res = await signIn("credentials", {
           redirect: false,
           email,
@@ -102,9 +98,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
         }
       }
 
-      // 4. Her şey başarılıysa:
-      handleClose();    // Modalı kapat
-      router.refresh(); // Sayfayı yenile ki header güncellensin (Avatar gelsin)
+      handleClose();    
+      router.refresh(); 
 
     } catch (err) {
       setError("Bir hata oluştu, lütfen tekrar deneyin.");

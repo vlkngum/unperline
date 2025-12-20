@@ -132,7 +132,6 @@ export default function ProfileEditPage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
 
-  // Profil verilerini yükle
   useEffect(() => {
     fetchProfile();
   }, []);

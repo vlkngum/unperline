@@ -45,7 +45,6 @@ export default function ProfileLayout({
     return !!session && (sessionName === pid || sessionEmail?.split("@")[0] === pid);
   }, [session, profileId]);
 
-  // Profil verisini backend'den çek
   useEffect(() => {
     async function loadProfile() {
       setLoading(true);
@@ -100,7 +99,6 @@ export default function ProfileLayout({
     { id: "likes", label: "Beğeniler", href: `/p/${encodeURIComponent(profileId)}/likes` },
   ];
 
-  // Aktif tab'ı pathname'den belirle
   const currentTab = useMemo(() => {
     if (pathname?.includes("/books")) return "books";
     if (pathname?.includes("/reviews")) return "reviews";
