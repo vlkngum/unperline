@@ -3,6 +3,7 @@
 import { Book } from "../../types/book";
 import Image from "next/image";
 import Link from "next/link";
+import StarDisplay from "../ui/StarDisplay";
 
 type ReviewData = {
   bookId: string;
@@ -25,42 +26,6 @@ type ReviewCardProps = {
   profile: ProfileData;
 };
 
-// Yıldız gösterimi için component
-function StarDisplay({ rating }: { rating: number }) {
-  // 0-10 arası değeri 0-5'e çevir
-  const valueIn5Scale = rating / 2;
-  const normalizedValue = Math.max(0, Math.min(5, valueIn5Scale));
-  const rounded = Math.round(normalizedValue * 2) / 2;
-  const fullStars = Math.floor(rounded);
-  const hasHalfStar = rounded - fullStars >= 0.5;
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: fullStars }).map((_, i) => (
-        <span key={`full-${i}`} className="text-green-500 text-lg">
-          ★
-        </span>
-      ))}
-      {hasHalfStar && (
-        <span className="relative inline-flex w-4 h-4">
-          <span className="absolute inset-0 text-gray-600 text-lg">★</span>
-          <span
-            className="absolute inset-0 overflow-hidden"
-            style={{ width: "50%" }}
-          >
-            <span className="text-green-500 text-lg">★</span>
-          </span>
-        </span>
-      )}
-      {Array.from({ length: emptyStars }).map((_, i) => (
-        <span key={`empty-${i}`} className="text-gray-600 text-lg">
-          ★
-        </span>
-      ))}
-    </div>
-  );
-}
 
 function getBookCover(book: Book | null): string {
   if (!book) return "";
@@ -144,7 +109,12 @@ export default function ReviewCard({ review, book, profile }: ReviewCardProps) {
 
           {/* Yıldız Puanı */}
           <div className="flex items-center gap-3 mt-1">
-            <StarDisplay rating={review.rating} />
+            <StarDisplay 
+              rating={review.rating} 
+              starSize="w-5 h-5" 
+              filledColor="green"
+              emptyColor="gray"
+            />
           </div>
 
           {/* İnceleme Metni */}
