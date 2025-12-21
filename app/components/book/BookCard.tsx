@@ -136,7 +136,7 @@ export default function BookCard({
               emptyColor="gray"
             />
           )}
-          {!rating && friendInfo?.rating && friendInfo.rating > 0 && friendInfo.rating != 0 && (
+          {!rating && friendInfo?.rating && friendInfo.rating >= 0 && friendInfo.rating != 0 && (
             <StarDisplay
               rating={friendInfo.rating}
               starSize="w-3 h-3"

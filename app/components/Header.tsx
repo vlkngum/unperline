@@ -109,7 +109,7 @@ export default function Header({ user }: HeaderProps) {
               >
                 <img
                   className="w-10 h-10 rounded-full object-cover cursor-pointer"
-                  src={user.avatar || '/user.png'}
+                  src={user.avatar || '/dex.png'}
                   alt="User Avatar"
                 />
               </Link>
