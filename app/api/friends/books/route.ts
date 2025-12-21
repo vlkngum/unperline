@@ -10,8 +10,8 @@ export async function GET(req: Request) {
     const users = await prisma.user.findMany({
       where: currentUserId
         ? {
-            NOT: { id: currentUserId },
-          }
+          NOT: { id: currentUserId },
+        }
         : undefined,
       select: {
         id: true,
@@ -22,12 +22,12 @@ export async function GET(req: Request) {
         bookRatings: true,
       },
       orderBy: {
-        createdAt: "desc", 
+        createdAt: "desc",
       },
-      take: 50, 
+      take: 50,
     });
 
-   
+
     const allBooks: Array<{
       bookId: string;
       userId: number;
@@ -35,25 +35,35 @@ export async function GET(req: Request) {
       fullName: string | null;
       avatarUrl: string | null;
       rating: number;
-      addedAt?: Date;
+      coverUrl?: string;
+      ratedAt?: string;
     }> = [];
 
     users.forEach((user) => {
       const readBooks = user.readBooks || [];
       const ratings: Record<
         string,
-        { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }
+        {
+          rating: number;
+          review: string;
+          liked?: boolean;
+          isFirstTime?: boolean;
+          coverUrl?: string;
+          ratedAt?: string;
+        }
       > =
         typeof user.bookRatings === "object" && user.bookRatings !== null
           ? (user.bookRatings as Record<
-              string,
-              {
-                rating: number;
-                review: string;
-                liked?: boolean;
-                isFirstTime?: boolean;
-              }
-            >)
+            string,
+            {
+              rating: number;
+              review: string;
+              liked?: boolean;
+              isFirstTime?: boolean;
+              coverUrl?: string;
+              ratedAt?: string;
+            }
+          >)
           : {};
 
       readBooks.forEach((bookId) => {
@@ -65,14 +75,20 @@ export async function GET(req: Request) {
           fullName: user.fullName,
           avatarUrl: user.avatarUrl,
           rating: bookRating?.rating || 0,
+          coverUrl: bookRating?.coverUrl,
+          ratedAt: bookRating?.ratedAt,
         });
       });
     });
 
-    const shuffled = allBooks.sort(() => Math.random() - 0.5);
+    const sortedBooks = allBooks.sort((a, b) => {
+      const dateA = a.ratedAt ? new Date(a.ratedAt).getTime() : 0;
+      const dateB = b.ratedAt ? new Date(b.ratedAt).getTime() : 0;
+      return dateB - dateA;
+    });
 
     return NextResponse.json({
-      books: shuffled,
+      books: sortedBooks,
     });
   } catch (error: any) {
     console.error("[FRIENDS BOOKS API] Error:", error);

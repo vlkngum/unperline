@@ -10,6 +10,7 @@ type FriendBookData = {
   username: string;
   fullName: string | null;
   avatarUrl: string | null;
+  coverUrl?: string; // Ekledik
 };
 
 async function fetchBookById(id: string): Promise<Book | null> {
@@ -91,21 +92,22 @@ export default function FriendsBooksPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {books.map((item, index) => {
               const displayName = item.friend.fullName || item.friend.username;
-              const avatarUrl = item.friend.avatarUrl || "/dex.png";
+              const avatarUrl = item.friend.avatarUrl || "/user.png";
 
-               return (
-                 <div key={`${item.book.id}-${index}`} className="relative">
-                   <BookCard 
-                     book={item.book} 
-                     roundedBottom={false}
-                     friendInfo={{
-                       username: item.friend.username,
-                       fullName: item.friend.fullName,
-                       avatarUrl: item.friend.avatarUrl,
-                     }}
-                   />
-                 </div>
-               );
+              return (
+                <div key={`${item.book.id}-${index}`} className="relative">
+                  <BookCard
+                    book={item.book}
+                    roundedBottom={false}
+                    friendInfo={{
+                      username: item.friend.username,
+                      fullName: item.friend.fullName,
+                      avatarUrl: item.friend.avatarUrl,
+                    }}
+                    customCoverUrl={item.friend.coverUrl}
+                  />
+                </div>
+              );
             })}
           </div>
         )}

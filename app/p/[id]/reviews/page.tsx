@@ -24,6 +24,7 @@ type ReviewData = {
   review: string;
   liked?: boolean;
   isFirstTime?: boolean;
+  coverUrl?: string;
 };
 
 type ProfileData = {
@@ -84,10 +85,10 @@ export default function ProfileReviewsPage() {
     }
     load();
   }, [profileId]);
-  
+
   return (
-    <div className="min-h-screen text-white w-full"> 
-      <div className="w-full max-w-[1400px] px-6 py-10"> 
+    <div className="min-h-screen text-white w-full">
+      <div className="w-full max-w-[1400px] px-6 py-10">
         <div className="w-full flex flex-col items-start space-y-8">
           {loading ? (
             <p className="text-gray-500 text-lg animate-pulse">İncelemeler yükleniyor…</p>

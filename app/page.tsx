@@ -83,6 +83,7 @@ export default async function Page() {
 
       return {
         book,
+        customCoverUrl: item.coverUrl,
         friendInfo: {
           username: item.username,
           fullName: item.fullName,
@@ -102,6 +103,9 @@ export default async function Page() {
       {!currentUser && <HomeHeader currentUser={currentUser} />}
 
       <div className="flex flex-col gap-8 mt-8">
+
+
+
         {validFriendsBooks.length > 0 && (
           <section className="mb-10 w-min">
             <div className="flex items-center justify-between mb-4 px-4 lg:px-0">
@@ -127,6 +131,7 @@ export default async function Page() {
                       book={item.book}
                       roundedBottom={false}
                       friendInfo={item.friendInfo}
+                      customCoverUrl={item.customCoverUrl}
                       rating={
                         item.friendInfo.rating > 0
                           ? { value: item.friendInfo.rating }
@@ -142,6 +147,7 @@ export default async function Page() {
             </div>
           </section>
         )}
+
 
         {categories.map((category, index) => {
           const books = categoryResults[index];

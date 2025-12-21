@@ -5,7 +5,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Eye, Heart, Clock } from "lucide-react";
 import ReviewModal from "../ReviewModal";
-import StarRating from "../ui/StarRating"; 
+import CoverModal from "../CoverModal";
+import StarRating from "../ui/StarRating";
 
 interface BookActionsProps {
   bookId: string;
@@ -17,14 +18,16 @@ export default function BookActions({ bookId, title = "Untitled", coverUrl = "" 
   const { data: session } = useSession();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
-  const [rating, setRating] = useState(0); 
+  const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [isRead, setIsRead] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isInReadList, setIsInReadList] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
- 
+  const [customCoverUrl, setCustomCoverUrl] = useState<string>("");
+
   useEffect(() => {
     if (session?.user?.id && bookId) {
       fetch(`/api/books/${bookId}`)
@@ -34,13 +37,14 @@ export default function BookActions({ bookId, title = "Untitled", coverUrl = "" 
           setIsRead(data.isRead || false);
           setIsLiked(data.isLiked || false);
           setIsInReadList(data.isInReadList || false);
+          if (data.coverUrl) setCustomCoverUrl(data.coverUrl);
         })
         .catch((err) => console.error("Error fetching book status:", err));
     }
   }, [session, bookId]);
 
   useEffect(() => {
-    if (!isModalOpen && session?.user?.id && bookId) {
+    if (!isModalOpen && !isCoverModalOpen && session?.user?.id && bookId) {
       fetch(`/api/books/${bookId}`)
         .then((res) => res.json())
         .then((data) => {
@@ -48,11 +52,12 @@ export default function BookActions({ bookId, title = "Untitled", coverUrl = "" 
           setIsRead(data.isRead || false);
           setIsLiked(data.isLiked || false);
           setIsInReadList(data.isInReadList || false);
+          if (data.coverUrl) setCustomCoverUrl(data.coverUrl);
         })
         .catch((err) => console.error("Error fetching book status:", err));
       router.refresh();
     }
-  }, [isModalOpen, session, bookId, router]);
+  }, [isModalOpen, isCoverModalOpen, session, bookId, router]);
 
   const handleRatingClick = async (value: number) => {
     if (!session?.user?.id) {
@@ -81,7 +86,7 @@ export default function BookActions({ bookId, title = "Untitled", coverUrl = "" 
       }
     } catch (error) {
       console.error("Error updating rating:", error);
-      setRating(rating); 
+      setRating(rating);
     } finally {
       setIsLoading(false);
     }
@@ -179,100 +184,111 @@ export default function BookActions({ bookId, title = "Untitled", coverUrl = "" 
     if (session?.user?.id) {
       if (action === "review") {
         setIsModalOpen(true);
+      } else if (action === "cover") {
+        setIsCoverModalOpen(true);
       }
     } else {
       router.push("/");
       return;
     }
-      
+
   };
 
   return (
     <>
       <div className="w-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg overflow-hidden text-center sticky top-4">
         <div className="flex justify-around items-center py-4 border-slate-700/50 text-indigo-200">
-          <button 
+          <button
             onClick={handleReadClick}
             disabled={isLoading}
-            className={`flex flex-col items-center gap-1 transition group cursor-pointer ${
-              isRead 
-                ? "text-green-400 hover:text-green-300" 
-                : "hover:text-white"
-            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`flex flex-col items-center gap-1 transition group cursor-pointer ${isRead
+              ? "text-green-400 hover:text-green-300"
+              : "hover:text-white"
+              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <Eye className={`w-8 h-8 group-hover:scale-110 transition-transform`} />
             <span className="text-xs font-medium">Okundu</span>
           </button>
-          <button 
+          <button
             onClick={handleLikeClick}
             disabled={isLoading}
-            className={`flex flex-col items-center gap-1 transition group cursor-pointer ${
-              isLiked 
-                ? "text-pink-500 hover:text-pink-400" 
-                : "text-indigo-200 hover:text-pink-500"
-            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`flex flex-col items-center gap-1 transition group cursor-pointer ${isLiked
+              ? "text-pink-500 hover:text-pink-400"
+              : "text-indigo-200 hover:text-pink-500"
+              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <Heart className={`w-8 h-8 group-hover:scale-110 transition-transform ${isLiked ? "fill-current" : ""}`} />
             <span className={`text-xs font-medium ${isLiked ? "text-pink-500" : "group-hover:text-pink-500"}`}>Beğen</span>
           </button>
-          <button 
+          <button
             onClick={handleReadListClick}
             disabled={isLoading}
-            className={`flex flex-col items-center gap-1 transition group cursor-pointer ${
-              isInReadList 
-                ? "text-yellow-400 hover:text-yellow-300" 
-                : "hover:text-white"
-            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`flex flex-col items-center gap-1 transition group cursor-pointer ${isInReadList
+              ? "text-yellow-400 hover:text-yellow-300"
+              : "hover:text-white"
+              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <Clock className={`w-8 h-8 group-hover:scale-110 transition-transform`} />
             <span className="text-xs font-medium">Listem</span>
           </button>
-         </div>
+        </div>
 
-         <div className="py-2 border-b border-slate-700/50">
-            <div className="flex justify-center">
-              <StarRating
-                rating={rating}
-                hoverRating={hoverRating}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={() => setHoverRating(0)}
-                onClick={handleRatingClick}
-                disabled={isLoading}
-                starSize="w-8 h-8"
-              />
-            </div>
+        <div className="py-2 border-b border-slate-700/50">
+          <div className="flex justify-center">
+            <StarRating
+              rating={rating}
+              hoverRating={hoverRating}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => setHoverRating(0)}
+              onClick={handleRatingClick}
+              disabled={isLoading}
+              starSize="w-8 h-8"
+            />
           </div>
+        </div>
 
-          
-          <div className="flex flex-col">
-            <button className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors border-b border-slate-700/30 text-center">
-                Aktiviteni göster
-            </button>
-            
-            <button 
-                onClick={() => handleActionClick("review")}
-                className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors border-b border-slate-700/30 text-center"
-            >
-                İnceleme yaz veya logla...
-            </button>
 
-            <button className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors border-b border-slate-700/30 text-center">
-                Listeye ekle...
-            </button>
-            <button className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors text-center">
-                Paylaş...
-            </button>
+        <div className="flex flex-col">
+          <button className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors border-b border-slate-700/30 text-center">
+            Aktiviteni göster
+          </button>
+
+          <button
+            onClick={() => handleActionClick("review")}
+            className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors border-b border-slate-700/30 text-center"
+          >
+            İnceleme yaz veya logla...
+          </button>
+
+          <button className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors border-b border-slate-700/30 text-center">
+            Listeye ekle...
+          </button>
+          <button
+            onClick={() => handleActionClick("cover")}
+            className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors border-b border-slate-700/30 text-center"
+          >
+            Kapak Resmi Değiştir
+          </button>
+          <button className="py-3 px-4 text-sm text-indigo-100/80 hover:bg-slate-700/50 hover:text-white transition-colors text-center">
+            Paylaş...
+          </button>
         </div>
       </div>
 
-      <ReviewModal 
+      <ReviewModal
         bookId={bookId}
-        isOpen={isModalOpen} 
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={title}
         coverUrl={coverUrl}
       />
+
+      <CoverModal
+        bookId={bookId}
+        isOpen={isCoverModalOpen}
+        onClose={() => setIsCoverModalOpen(false)}
+        currentCoverUrl={customCoverUrl || coverUrl}
+      />
     </>
   );
 }
- 

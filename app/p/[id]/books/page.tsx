@@ -36,7 +36,7 @@ type ProfileData = {
   bio?: string | null;
 };
 
- 
+
 
 type SortKey = "title_asc" | "title_desc" | "date_new" | "date_old";
 
@@ -72,8 +72,8 @@ const customSelectStyles = {
     backgroundColor: state.isSelected
       ? "rgba(255, 255, 255, 0.1)"
       : state.isFocused
-      ? "rgba(255, 255, 255, 0.05)"
-      : "transparent",
+        ? "rgba(255, 255, 255, 0.05)"
+        : "transparent",
     color: "#ffffff",
     cursor: "pointer",
     fontSize: "0.875rem",
@@ -107,6 +107,49 @@ const customSelectStyles = {
   }),
 };
 
+const BookItem = ({
+  book,
+  ratingData,
+}: {
+  book: Book;
+  ratingData?: {
+    value: number;
+    count?: number;
+    coverUrl?: string;
+    review?: string;
+  };
+}) => {
+  const [showOriginal, setShowOriginal] = useState(false);
+  const hasCustomCover = !!ratingData?.coverUrl;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="relative group">
+        <BookCard
+          book={book}
+          rating={ratingData}
+          customCoverUrl={showOriginal ? undefined : ratingData?.coverUrl}
+        />
+        {hasCustomCover && (
+          <button
+            onClick={() => setShowOriginal(!showOriginal)}
+            className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            title={showOriginal ? "Özel kapağı göster" : "Orjinal kapağı göster"}
+          >
+            <Pencil size={14} />
+          </button>
+        )}
+      </div>
+
+      {ratingData?.review && (
+        <div className="bg-neutral-900/50 p-3 rounded-lg border border-white/10 text-sm text-gray-300">
+          <p className="line-clamp-3 italic">"{ratingData.review}"</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function ProfileBooksPage() {
   const params = useParams();
   const profileId = params?.id?.toString() || "profil";
@@ -118,6 +161,8 @@ export default function ProfileBooksPage() {
       {
         value: number;
         count?: number;
+        coverUrl?: string;
+        review?: string;
       }
     >
   >({});
@@ -125,12 +170,10 @@ export default function ProfileBooksPage() {
   const [sortBy, setSortBy] = useState<SortKey>("date_new");
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
-   
-
   useEffect(() => {
     async function load() {
       setLoading(true);
-      try { 
+      try {
         const res = await fetch(`/api/p/${encodeURIComponent(profileId)}/books`, {
           cache: "no-store",
         });
@@ -163,9 +206,6 @@ export default function ProfileBooksPage() {
     }
     load();
   }, [profileId]);
-
-  
-
 
   const sortedBooks: Book[] = useMemo(() => {
     const booksCopy = [...allBooks];
@@ -234,12 +274,7 @@ export default function ProfileBooksPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
                 {sortedBooks.map((book) => (
-                  <div key={book.id}>
-                    <BookCard
-                      book={book}
-                      rating={bookRatings[book.id]}
-                    />
-                  </div>
+                  <BookItem key={book.id} book={book} ratingData={bookRatings[book.id]} />
                 ))}
               </div>
             </>

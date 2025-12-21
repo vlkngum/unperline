@@ -11,6 +11,7 @@ type ReviewData = {
   review: string;
   liked?: boolean;
   isFirstTime?: boolean;
+  coverUrl?: string;
 };
 
 type ProfileData = {
@@ -44,24 +45,24 @@ function getBookCover(book: Book | null): string {
 export default function ReviewCard({ review, book, profile }: ReviewCardProps) {
   if (!book) return null;
 
-  const coverUrl = getBookCover(book);
+  const coverUrl = review.coverUrl || getBookCover(book);
   const title = book.volumeInfo?.title || "Başlık Yok";
   const year = book.volumeInfo?.publishedDate?.split("-")[0] || "";
   const displayName = profile.fullName || profile.username;
-  const avatarUrl = profile.avatarUrl || "/dex.png";
+  const avatarUrl = profile.avatarUrl || "/user.png";
 
   return (
     <div className="w-full max-w-6xl bg-neutral-900/50 border border-white/10 rounded-lg p-6 hover:border-white/20 transition-all shadow-lg">
-      <div className="flex gap-8"> 
+      <div className="flex gap-8">
         <Link href={`/books/${review.bookId}`} className="flex-shrink-0">
           <div className="w-40 h-56 bg-neutral-800 rounded-lg overflow-hidden border border-white/30 shadow-md group">
             <Image
               src={coverUrl}
               alt={title}
-              width={160} 
+              width={160}
               height={224}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              unoptimized 
+              unoptimized
             />
           </div>
         </Link>

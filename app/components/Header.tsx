@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { handleSignOut } from '@/app/lib/actions'
-import AuthModal from './AuthModal' 
+import AuthModal from './AuthModal'
 
 interface HeaderProps {
   user?: {
@@ -23,11 +23,11 @@ const LogoIcon = () => (
 
 export default function Header({ user }: HeaderProps) {
   const [query, setQuery] = useState('')
-  const [open, setOpen] = useState(false) 
-  
+  const [open, setOpen] = useState(false)
+
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
-  
+
   const router = useRouter()
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -48,7 +48,7 @@ export default function Header({ user }: HeaderProps) {
         </Link>
 
         <div className="flex items-center gap-6 relative">
-          {!user && ( 
+          {!user && (
             <div className="hidden md:flex items-center gap-6">
               <button
                 onClick={() => {
@@ -75,8 +75,8 @@ export default function Header({ user }: HeaderProps) {
             <Link href="#" className="text-lg font-semibold text-white transition-colors">
               Books
             </Link>
-            <Link href="/connect" className="flex items-center text-lg font-semibold text-white transition-colors">
-              Connect + 
+            <Link href="/members" className="flex items-center text-lg font-semibold text-white transition-colors">
+              Connect +
             </Link>
           </div>
 
@@ -96,8 +96,8 @@ export default function Header({ user }: HeaderProps) {
               <Search className="w-5 h-5 text-gray-400" />
             </button>
           </form>
- 
-          {user && ( 
+
+          {user && (
             <div
               className="relative overflow-visible z-50"
               onMouseEnter={() => setOpen(true)}
@@ -109,7 +109,7 @@ export default function Header({ user }: HeaderProps) {
               >
                 <img
                   className="w-10 h-10 rounded-full object-cover cursor-pointer"
-                  src={user.avatar || '/dex.png'}
+                  src={user.avatar || '/user.png'}
                   alt="User Avatar"
                 />
               </Link>
@@ -127,7 +127,7 @@ export default function Header({ user }: HeaderProps) {
                       href={`/p/${encodeURIComponent(user.name || "me")}`}
                       className="block py-2 text-sm hover:text-neutral-300"
                       title={user.name || "Profilim"}>
-                        Hesabım
+                      Hesabım
                     </Link>
                     <Link
                       href={`/p/${encodeURIComponent(user.name || "me")}/books`}
@@ -150,9 +150,8 @@ export default function Header({ user }: HeaderProps) {
             </div>
           )}
 
-          {/* DÜZELTİLEN KISIM: AuthModal Props Eşleşmesi */}
-          <AuthModal 
-            isOpen={authOpen} 
+          <AuthModal
+            isOpen={authOpen}
             onClose={() => setAuthOpen(false)}
             initialMode={authMode}
           />

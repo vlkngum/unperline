@@ -1,9 +1,9 @@
 "use client";
 
-import { Book } from "../../../types/book"; 
+import { Book } from "../../../types/book";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react"; 
+import { useSession } from "next-auth/react";
 import BookCard from "../../../components/book/BookCard";
 import Select from "react-select";
 
@@ -33,7 +33,7 @@ type ProfileData = {
   bio?: string | null;
 };
 
- 
+
 
 type SortKey = "title_asc" | "title_desc" | "date_new" | "date_old";
 
@@ -69,8 +69,8 @@ const customSelectStyles = {
     backgroundColor: state.isSelected
       ? "rgba(255, 255, 255, 0.1)"
       : state.isFocused
-      ? "rgba(255, 255, 255, 0.05)"
-      : "transparent",
+        ? "rgba(255, 255, 255, 0.05)"
+        : "transparent",
     color: "#ffffff",
     cursor: "pointer",
     fontSize: "0.875rem",
@@ -115,6 +115,7 @@ export default function ProfileLikesPage() {
       {
         value: number;
         count?: number;
+        coverUrl?: string;
       }
     >
   >({});
@@ -122,12 +123,12 @@ export default function ProfileLikesPage() {
   const [sortBy, setSortBy] = useState<SortKey>("date_new");
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
-   
+
 
   useEffect(() => {
     async function load() {
       setLoading(true);
-      try { 
+      try {
         const res = await fetch(`/api/p/${encodeURIComponent(profileId)}/likes`, {
           cache: "no-store",
         });
@@ -161,7 +162,7 @@ export default function ProfileLikesPage() {
     load();
   }, [profileId]);
 
-  
+
 
 
   const sortedBooks: Book[] = useMemo(() => {
@@ -235,6 +236,7 @@ export default function ProfileLikesPage() {
                     <BookCard
                       book={book}
                       rating={bookRatings[book.id]}
+                      customCoverUrl={bookRatings[book.id]?.coverUrl}
                     />
                   </div>
                 ))}

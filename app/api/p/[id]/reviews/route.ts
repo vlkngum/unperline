@@ -39,18 +39,19 @@ export async function GET(
 
     const ratings: Record<
       string,
-      { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }
+      { rating: number; review: string; liked?: boolean; isFirstTime?: boolean; coverUrl?: string }
     > =
       typeof user.bookRatings === "object" && user.bookRatings !== null
         ? (user.bookRatings as Record<
-            string,
-            {
-              rating: number;
-              review: string;
-              liked?: boolean;
-              isFirstTime?: boolean;
-            }
-          >)
+          string,
+          {
+            rating: number;
+            review: string;
+            liked?: boolean;
+            isFirstTime?: boolean;
+            coverUrl?: string;
+          }
+        >)
         : {};
 
     const reviews: Array<{
@@ -59,6 +60,7 @@ export async function GET(
       review: string;
       liked?: boolean;
       isFirstTime?: boolean;
+      coverUrl?: string;
     }> = [];
 
     Object.entries(ratings).forEach(([bookId, rating]) => {
@@ -69,6 +71,7 @@ export async function GET(
           review: rating.review,
           liked: rating.liked,
           isFirstTime: rating.isFirstTime,
+          coverUrl: rating.coverUrl,
         });
       }
     });

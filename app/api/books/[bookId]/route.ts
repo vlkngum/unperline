@@ -32,10 +32,10 @@ export async function POST(
 
     let updatedRatings: Record<
       string,
-      { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }
+      { rating: number; review: string; liked?: boolean; isFirstTime?: boolean; coverUrl?: string; ratedAt?: string }
     > =
       typeof user.bookRatings === "object" && user.bookRatings !== null
-        ? (user.bookRatings as Record<string, { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }>)
+        ? (user.bookRatings as Record<string, { rating: number; review: string; liked?: boolean; isFirstTime?: boolean; coverUrl?: string; ratedAt?: string }>)
         : {};
 
     if (action === "read") {
@@ -73,11 +73,14 @@ export async function POST(
         delete updatedRatings[bookId];
         updatedReadBooks = updatedReadBooks.filter((id) => id !== bookId);
       } else {
+        const currentData = updatedRatings[bookId] || {};
         updatedRatings[bookId] = {
+          ...currentData,
           rating,
-          review: review ?? "",
-          liked: liked ?? false,
-          isFirstTime: isFirstTime ?? false,
+          review: review ?? currentData.review ?? "",
+          liked: liked ?? currentData.liked ?? false,
+          isFirstTime: isFirstTime ?? currentData.isFirstTime ?? false,
+          ratedAt: new Date().toISOString(),
         };
 
         if (!updatedReadBooks.includes(bookId)) {
@@ -85,6 +88,20 @@ export async function POST(
         }
 
         updatedReadList = updatedReadList.filter((id) => id !== bookId);
+      }
+    }
+
+    else if (action === "cover") {
+      const { coverUrl } = body;
+      const currentData = updatedRatings[bookId] || { rating: 0, review: "", liked: false, isFirstTime: false };
+
+      updatedRatings[bookId] = {
+        ...currentData,
+        coverUrl: coverUrl || undefined
+      };
+
+      if (!updatedReadBooks.includes(bookId) && coverUrl) {
+        updatedReadBooks.push(bookId);
       }
     }
 
@@ -143,10 +160,10 @@ export async function GET(
 
     const ratings: Record<
       string,
-      { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }
+      { rating: number; review: string; liked?: boolean; isFirstTime?: boolean; coverUrl?: string; ratedAt?: string }
     > =
       typeof user.bookRatings === "object" && user.bookRatings !== null
-        ? (user.bookRatings as Record<string, { rating: number; review: string; liked?: boolean; isFirstTime?: boolean }>)
+        ? (user.bookRatings as Record<string, { rating: number; review: string; liked?: boolean; isFirstTime?: boolean; coverUrl?: string; ratedAt?: string }>)
         : {};
 
     const bookRating = ratings[bookId];
@@ -159,6 +176,7 @@ export async function GET(
       review: bookRating?.review || "",
       liked: bookRating?.liked || false,
       isFirstTime: bookRating?.isFirstTime ?? undefined,
+      coverUrl: bookRating?.coverUrl || null,
       exists: !!bookRating,
     });
   } catch (error: any) {
