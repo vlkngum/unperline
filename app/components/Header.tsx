@@ -72,10 +72,16 @@ export default function Header({ user }: HeaderProps) {
           )}
 
           <div className="hidden md:flex items-center gap-6">
-            <Link href="#" className="text-lg font-semibold text-white transition-colors">
+            <Link
+              href="/books"
+              className="text-lg font-semibold text-white transition-colors hover:text-neutral-300"
+            >
               Books
             </Link>
-            <Link href="/members" className="flex items-center text-lg font-semibold text-white transition-colors">
+            <Link
+              href="/members"
+              className="flex items-center text-lg font-semibold text-white transition-colors hover:text-neutral-300"
+            >
               Connect +
             </Link>
           </div>
