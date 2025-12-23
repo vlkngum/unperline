@@ -106,7 +106,7 @@ export default async function Page() {
 
 
 
-        {validFriendsBooks.length > 0 && (
+        {!currentUser && (
           <section className="mb-10 w-min">
             <div className="flex items-center justify-between mb-4 px-4 lg:px-0">
               <h2 className="text-xl font-semibold text-white">
