@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-   images: {
+  images: {
     dangerouslyAllowSVG: true,
     remotePatterns: [
       {
@@ -16,10 +16,25 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "*.google.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleapis.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "placehold.co",
         pathname: "/**",
       },
-       {
+      {
         protocol: "https",
         hostname: "via.placeholder.com",
         pathname: "/**",
