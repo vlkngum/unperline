@@ -106,47 +106,47 @@ export default async function Page() {
 
 
 
-        {!currentUser && (
-          <section className="mb-10 w-min">
-            <div className="flex items-center justify-between mb-4 px-4 lg:px-0">
-              <h2 className="text-xl font-semibold text-white">
-                New from Friends
-              </h2>
-              <Link
-                href="/friends/books"
-                className="text-sm text-gray-400 hover:text-white transition-colors"
-              >
-                See all →
-              </Link>
+
+        <section className="mb-10 w-min">
+          <div className="flex items-center justify-between mb-4 px-4 lg:px-0">
+            <h2 className="text-xl font-semibold text-white">
+              New from Users
+            </h2>
+            <Link
+              href="/friends/books"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              See all →
+            </Link>
+          </div>
+
+          <div className="relative">
+            <div className="flex gap-4 py-2 px-4 lg:px-0 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-thin scroll-hidden">
+              {validFriendsBooks.map((item: any) => (
+                <div
+                  key={item.book.id}
+                  className="flex-shrink-0 w-36 snap-start"
+                >
+                  <BookCard
+                    book={item.book}
+                    roundedBottom={false}
+                    friendInfo={item.friendInfo}
+                    customCoverUrl={item.customCoverUrl}
+                    rating={
+                      item.friendInfo.rating > 0
+                        ? { value: item.friendInfo.rating }
+                        : undefined
+                    }
+                  />
+                </div>
+              ))}
             </div>
 
-            <div className="relative">
-              <div className="flex gap-4 py-2 px-4 lg:px-0 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-thin scroll-hidden">
-                {validFriendsBooks.map((item: any) => (
-                  <div
-                    key={item.book.id}
-                    className="flex-shrink-0 w-36 snap-start"
-                  >
-                    <BookCard
-                      book={item.book}
-                      roundedBottom={false}
-                      friendInfo={item.friendInfo}
-                      customCoverUrl={item.customCoverUrl}
-                      rating={
-                        item.friendInfo.rating > 0
-                          ? { value: item.friendInfo.rating }
-                          : undefined
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
+            <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#141414]/80 to-transparent pointer-events-none" />
+            <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#141414]/80 to-transparent pointer-events-none" />
+          </div>
+        </section>
 
-              <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#141414]/80 to-transparent pointer-events-none" />
-              <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#141414]/80 to-transparent pointer-events-none" />
-            </div>
-          </section>
-        )}
 
 
         {categories.map((category, index) => {
