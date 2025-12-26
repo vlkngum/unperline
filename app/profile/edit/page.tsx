@@ -129,6 +129,7 @@ export default function ProfileEditPage() {
   const [searchQueries, setSearchQueries] = useState<string[]>(["", "", "", ""]);
   const [searchResults, setSearchResults] = useState<(Book[] | null)[]>([null, null, null, null]);
   const [activeSearchIndex, setActiveSearchIndex] = useState<number | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const searchTimeoutRefs = useRef<(NodeJS.Timeout | null)[]>([null, null, null, null]);
   const searchInputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
   
@@ -309,6 +310,44 @@ export default function ProfileEditPage() {
     const newQueries = [...searchQueries];
     newQueries[index] = "";
     setSearchQueries(newQueries);
+  };
+
+  const handleDragStart = (actualIndex: number) => {
+    setDraggedIndex(actualIndex);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, dropActualIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === dropActualIndex) {
+      setDraggedIndex(null);
+      return;
+    }
+
+    // Reorder arrays by swapping
+    const newFavoriteBooks = [...profile.favoriteBooks];
+    const newFavoriteBooksData = [...favoriteBooksData];
+    
+    // Swap the items
+    const tempId = newFavoriteBooks[draggedIndex];
+    const tempData = newFavoriteBooksData[draggedIndex];
+    
+    newFavoriteBooks[draggedIndex] = newFavoriteBooks[dropActualIndex];
+    newFavoriteBooks[dropActualIndex] = tempId;
+    
+    newFavoriteBooksData[draggedIndex] = newFavoriteBooksData[dropActualIndex];
+    newFavoriteBooksData[dropActualIndex] = tempData;
+    
+    setProfile({ ...profile, favoriteBooks: newFavoriteBooks });
+    setFavoriteBooksData(newFavoriteBooksData);
+    setDraggedIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   const handleSaveProfile = async () => {
@@ -637,87 +676,101 @@ export default function ProfileEditPage() {
                     <label className="block text-sm font-medium text-gray-300 mb-3">
                       Favori Kitaplar (4 adet)
                     </label>
+                    
+                    {/* Selected Books Grid */}
+                    {favoriteBooksData.some(book => book !== null) && (
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-400 mb-2">Sürükleyerek sıralamayı düzenleyin.</p>
+                        <div className="flex gap-4 flex-wrap">
+                          {favoriteBooksData.map((book, index) => (
+                            book ? (
+                              <div
+                                key={`book-${index}-${book.id}`}
+                                draggable
+                                onDragStart={() => handleDragStart(index)}
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, index)}
+                                onDragEnd={handleDragEnd}
+                                className={`relative group cursor-move ${draggedIndex === index ? 'opacity-50' : ''}`}
+                              >
+                                {book.thumbnail ? (
+                                  <img
+                                    src={book.thumbnail}
+                                    alt={book.title}
+                                    className="w-24 h-36 object-cover rounded-lg shadow-lg border-2 border-slate-600 hover:border-blue-500 transition-all"
+                                  />
+                                ) : (
+                                  <div className="w-24 h-36 bg-slate-700 rounded-lg flex items-center justify-center">
+                                    <span className="text-gray-500 text-xs">Kapak yok</span>
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveBook(index)}
+                                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X size={14} className="text-white" />
+                                </button>
+                              </div>
+                            ) : null
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Search Inputs for Empty Slots */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[0, 1, 2, 3].map((i) => (
-                        <div key={i} className="relative" data-search-index={i}>
-                          {favoriteBooksData[i] ? (
-                            <div className="bg-slate-900/50 border border-slate-600 rounded-lg p-3 flex items-center gap-3">
-                              {favoriteBooksData[i]?.thumbnail && (
-                                <img
-                                  src={favoriteBooksData[i]?.thumbnail}
-                                  alt={favoriteBooksData[i]?.title}
-                                  className="w-12 h-16 object-cover rounded"
-                                />
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-white text-sm font-medium truncate">
-                                  {favoriteBooksData[i]?.title}
-                                </p>
-                                {favoriteBooksData[i]?.authors && (
-                                  <p className="text-gray-400 text-xs truncate">
-                                    {favoriteBooksData[i]?.authors?.join(", ")}
-                                  </p>
-                                )}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveBook(i)}
-                                className="text-gray-400 hover:text-red-400 transition-colors"
-                              >
-                                <X size={18} />
-                              </button>
-                            </div>
-                          ) : (
+                        !favoriteBooksData[i] ? (
+                          <div key={i} className="relative" data-search-index={i}>
                             <div className="relative">
-                              <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                <input
-                                  ref={(el) => { searchInputRefs.current[i] = el; }}
-                                  type="text"
-                                  value={searchQueries[i]}
-                                  onChange={(e) => handleSearchQueryChange(i, e.target.value)}
-                                  onFocus={() => {
-                                    if (searchQueries[i].trim().length >= 2 && searchResults[i]) {
-                                      setActiveSearchIndex(i);
-                                    }
-                                  }}
-                                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                  placeholder={`Kitap ara... (${i + 1}/4)`}
-                                />
-                              </div>
-                              {activeSearchIndex === i && searchResults[i] && searchResults[i]!.length > 0 && (
-                                <div className="absolute z-50 w-full mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl max-h-64 overflow-y-auto">
-                                  {searchResults[i]!.map((book) => (
-                                    <button
-                                      key={book.id}
-                                      type="button"
-                                      onClick={() => handleSelectBook(i, book)}
-                                      className="w-full p-3 hover:bg-slate-700 transition-colors flex items-center gap-3 text-left"
-                                    >
-                                      {book.volumeInfo.imageLinks?.thumbnail && (
-                                        <img
-                                          src={book.volumeInfo.imageLinks.thumbnail}
-                                          alt={book.volumeInfo.title}
-                                          className="w-10 h-14 object-cover rounded flex-shrink-0"
-                                        />
-                                      )}
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-white text-sm font-medium truncate">
-                                          {book.volumeInfo.title}
-                                        </p>
-                                        {book.volumeInfo.authors && (
-                                          <p className="text-gray-400 text-xs truncate">
-                                            {book.volumeInfo.authors.join(", ")}
-                                          </p>
-                                        )}
-                                      </div>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                              <input
+                                ref={(el) => { searchInputRefs.current[i] = el; }}
+                                type="text"
+                                value={searchQueries[i]}
+                                onChange={(e) => handleSearchQueryChange(i, e.target.value)}
+                                onFocus={() => {
+                                  if (searchQueries[i].trim().length >= 2 && searchResults[i]) {
+                                    setActiveSearchIndex(i);
+                                  }
+                                }}
+                                className="w-full pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="Kitap ara..."
+                              />
                             </div>
-                          )}
-                        </div>
+                            {activeSearchIndex === i && searchResults[i] && searchResults[i]!.length > 0 && (
+                              <div className="absolute z-50 w-full mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+                                {searchResults[i]!.map((book) => (
+                                  <button
+                                    key={book.id}
+                                    type="button"
+                                    onClick={() => handleSelectBook(i, book)}
+                                    className="w-full p-3 hover:bg-slate-700 transition-colors flex items-center gap-3 text-left"
+                                  >
+                                    {book.volumeInfo.imageLinks?.thumbnail && (
+                                      <img
+                                        src={book.volumeInfo.imageLinks.thumbnail}
+                                        alt={book.volumeInfo.title}
+                                        className="w-10 h-14 object-cover rounded flex-shrink-0"
+                                      />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-white text-sm font-medium truncate">
+                                        {book.volumeInfo.title}
+                                      </p>
+                                      {book.volumeInfo.authors && (
+                                        <p className="text-gray-400 text-xs truncate">
+                                          {book.volumeInfo.authors.join(", ")}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : null
                       ))}
                     </div>
                   </div>

@@ -3,7 +3,6 @@
 import { Book } from "../../types/book";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import BookCategoryRow from "../../components/book/BookCategory";
 
 async function fetchBookById(id: string): Promise<Book | null> {
   try {
@@ -69,11 +68,28 @@ export default function ProfilePage() {
       ) : (
         <>
           {favoriteBooks.length > 0 && (
-            <BookCategoryRow
-              key="favori"
-              title="Favori Kitaplar"
-              books={favoriteBooks}
-            />
+            <section className="mb-10">
+              <h2 className="text-xl font-semibold mb-4 text-white">
+                Favori Kitaplar
+              </h2>
+              <div className="flex gap-4 flex-wrap">
+                {favoriteBooks.map((book) => (
+                  <div key={book.id} className="flex-shrink-0">
+                    {book.volumeInfo.imageLinks?.thumbnail ? (
+                      <img
+                        src={book.volumeInfo.imageLinks.thumbnail}
+                        alt={book.volumeInfo.title}
+                        className="w-24 h-36 object-cover rounded-lg shadow-lg border-2 border-slate-600 hover:border-blue-500 transition-all"
+                      />
+                    ) : (
+                      <div className="w-24 h-36 bg-slate-700 rounded-lg flex items-center justify-center">
+                        <span className="text-gray-500 text-xs">Kapak yok</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
           
           {!loading && favoriteBooks.length === 0 && (
