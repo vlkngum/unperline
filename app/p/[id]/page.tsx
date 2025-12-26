@@ -1,30 +1,15 @@
 "use client";
 
-import { GoogleBooksResponse, Book } from "../../types/book";
+import { Book } from "../../types/book";
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import BookCategoryRow from "../../components/book/BookCategory";
-
-const FAVORITE_IDS = [
-  "zyTCAlFPjgYC",
-  "m8dPPgAACAAJ",
-  "yZ1VDwAAQBAJ",
-  "uW8oEAAAQBAJ",
-  "eLRhEAAAQBAJ",
-];
-
-const RECENT_IDS = [
-  "1wy49i-gQjIC",
-  "xv8sAAAAYAAJ",
-  "uW8oEAAAQBAJ",
-  "tQ8IAQAAMAAJ",
-  "m8dPPgAACAAJ",
-];
 
 async function fetchBookById(id: string): Promise<Book | null> {
   try {
     const res = await fetch(
       `https://www.googleapis.com/books/v1/volumes/${id}`,
-      { next: { revalidate: 300 } }
+      { cache: "no-store" }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -34,53 +19,70 @@ async function fetchBookById(id: string): Promise<Book | null> {
 }
 
 async function fetchBooksByIds(ids: string[]): Promise<Book[]> {
+  if (ids.length === 0) return [];
   const results = await Promise.all(ids.map(fetchBookById));
   return results.filter(Boolean) as Book[];
 }
 
-
 export default function ProfilePage() {
+  const params = useParams();
+  const profileId = params?.id?.toString() || "";
   const [favoriteBooks, setFavoriteBooks] = useState<Book[]>([]);
-  const [recentBooks, setRecentBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const [favorites, recent] = await Promise.all([
-        fetchBooksByIds(FAVORITE_IDS),
-        fetchBooksByIds(RECENT_IDS),
-      ]);
-      setFavoriteBooks(favorites);
-      setRecentBooks(recent);
-      setLoading(false);
+      try {
+        // Fetch user profile to get favorite books
+        const profileRes = await fetch(`/api/p/${encodeURIComponent(profileId)}/profile`, {
+          cache: "no-store",
+        });
+        
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          const favoriteBookIds = profileData.favoriteBooks || [];
+          
+          if (favoriteBookIds.length > 0) {
+            const books = await fetchBooksByIds(favoriteBookIds);
+            setFavoriteBooks(books);
+          } else {
+            setFavoriteBooks([]);
+          }
+        }
+      } catch (error) {
+        console.error("Profil yükleme hatası:", error);
+      } finally {
+        setLoading(false);
+      }
     }
-    load();
-  }, []);
+    
+    if (profileId) {
+      load();
+    }
+  }, [profileId]);
 
   return (
     <div className="px-4 py-8 space-y-14 w-full">
-          {loading ? (
-            <p className="text-gray-500">Yükleniyor…</p>
-          ) : (
-            <> 
-              {favoriteBooks.length > 0 && (
-                <BookCategoryRow
-                  key="favori"
-                  title="Favori Kitaplar"
-                  books={favoriteBooks}
-                />
-              )}
-
-              {recentBooks.length > 0 && (
-                <BookCategoryRow
-                  key="recent"
-                  title="Son Okunanlar"
-                  books={recentBooks}
-                />
-              )}
-            </>
+      {loading ? (
+        <p className="text-gray-500">Yükleniyor…</p>
+      ) : (
+        <>
+          {favoriteBooks.length > 0 && (
+            <BookCategoryRow
+              key="favori"
+              title="Favori Kitaplar"
+              books={favoriteBooks}
+            />
           )}
+          
+          {!loading && favoriteBooks.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-400">Henüz favori kitap eklenmemiş.</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

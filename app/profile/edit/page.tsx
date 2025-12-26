@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { Camera, Upload, User, Lock, Database, Trash2 } from "lucide-react";
+import { FormEvent, useEffect, useState, useRef } from "react";
+import { Camera, Upload, User, Lock, Database, Trash2, X, Search } from "lucide-react";
 import Select from "react-select";
+import { Book } from "../../types/book";
 
 type ProfileData = {
   id: number;
@@ -18,6 +19,13 @@ type ProfileData = {
   pronouns?: string | null;
   favoriteBooks: string[];
 };
+
+type FavoriteBookData = {
+  id: string;
+  title: string;
+  authors?: string[];
+  thumbnail?: string;
+} | null;
 
 const PRONOUN_OPTIONS = [
   { value: "he-him", label: "He/Him" },
@@ -116,6 +124,13 @@ export default function ProfileEditPage() {
     pronouns: "o/ona",
     favoriteBooks: ["", "", "", ""]
   });
+
+  const [favoriteBooksData, setFavoriteBooksData] = useState<(FavoriteBookData)[]>([null, null, null, null]);
+  const [searchQueries, setSearchQueries] = useState<string[]>(["", "", "", ""]);
+  const [searchResults, setSearchResults] = useState<(Book[] | null)[]>([null, null, null, null]);
+  const [activeSearchIndex, setActiveSearchIndex] = useState<number | null>(null);
+  const searchTimeoutRefs = useRef<(NodeJS.Timeout | null)[]>([null, null, null, null]);
+  const searchInputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
   
   const [activeTab, setActiveTab] = useState<"info" | "password" | "data" | "delete">("info");
   const [loading, setLoading] = useState(true);
@@ -136,6 +151,26 @@ export default function ProfileEditPage() {
     fetchProfile();
   }, []);
 
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (activeSearchIndex !== null) {
+        const target = event.target as HTMLElement;
+        const searchContainer = document.querySelector(`[data-search-index="${activeSearchIndex}"]`);
+        if (searchContainer && !searchContainer.contains(target)) {
+          setActiveSearchIndex(null);
+        }
+      }
+    };
+
+    if (activeSearchIndex !== null) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [activeSearchIndex]);
+
   const fetchProfile = async () => {
     try {
       setLoading(true);
@@ -146,10 +181,36 @@ export default function ProfileEditPage() {
       }
       
       const data = await res.json();
+      const favoriteBookIds = data.favoriteBooks?.length ? data.favoriteBooks : ["", "", "", ""];
+      
       setProfile({
         ...data,
-        favoriteBooks: data.favoriteBooks?.length ? data.favoriteBooks : ["", "", "", ""]
+        favoriteBooks: favoriteBookIds
       });
+
+      // Load favorite books data
+      const booksData: (FavoriteBookData)[] = [null, null, null, null];
+      for (let i = 0; i < favoriteBookIds.length; i++) {
+        if (favoriteBookIds[i]) {
+          try {
+            const bookRes = await fetch(
+              `https://www.googleapis.com/books/v1/volumes/${favoriteBookIds[i]}`
+            );
+            if (bookRes.ok) {
+              const book: Book = await bookRes.json();
+              booksData[i] = {
+                id: book.id,
+                title: book.volumeInfo.title,
+                authors: book.volumeInfo.authors,
+                thumbnail: book.volumeInfo.imageLinks?.thumbnail || book.volumeInfo.imageLinks?.smallThumbnail,
+              };
+            }
+          } catch (e) {
+            console.error("Kitap yükleme hatası:", e);
+          }
+        }
+      }
+      setFavoriteBooksData(booksData);
     } catch (error) {
       console.error("Profil yükleme hatası:", error);
       setProfileError("Profil bilgileri yüklenemedi");
@@ -171,10 +232,83 @@ export default function ProfileEditPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleFavoriteBookChange = (index: number, value: string) => {
-    const next = [...profile.favoriteBooks];
-    next[index] = value;
-    setProfile({ ...profile, favoriteBooks: next });
+  const handleSearchQueryChange = async (index: number, query: string) => {
+    const newQueries = [...searchQueries];
+    newQueries[index] = query;
+    setSearchQueries(newQueries);
+
+    // Clear previous timeout
+    if (searchTimeoutRefs.current[index]) {
+      clearTimeout(searchTimeoutRefs.current[index]);
+    }
+
+    if (query.trim().length < 2) {
+      setSearchResults(prev => {
+        const next = [...prev];
+        next[index] = null;
+        return next;
+      });
+      setActiveSearchIndex(null);
+      return;
+    }
+
+    // Debounce search
+    searchTimeoutRefs.current[index] = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/books/search?q=${encodeURIComponent(query)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(prev => {
+            const next = [...prev];
+            next[index] = data.items || [];
+            return next;
+          });
+          setActiveSearchIndex(index);
+        }
+      } catch (error) {
+        console.error("Kitap arama hatası:", error);
+      }
+    }, 300);
+  };
+
+  const handleSelectBook = (index: number, book: Book) => {
+    const newFavoriteBooks = [...profile.favoriteBooks];
+    newFavoriteBooks[index] = book.id;
+    setProfile({ ...profile, favoriteBooks: newFavoriteBooks });
+
+    const newFavoriteBooksData = [...favoriteBooksData];
+    newFavoriteBooksData[index] = {
+      id: book.id,
+      title: book.volumeInfo.title,
+      authors: book.volumeInfo.authors,
+      thumbnail: book.volumeInfo.imageLinks?.thumbnail || book.volumeInfo.imageLinks?.smallThumbnail,
+    };
+    setFavoriteBooksData(newFavoriteBooksData);
+
+    const newQueries = [...searchQueries];
+    newQueries[index] = "";
+    setSearchQueries(newQueries);
+
+    setSearchResults(prev => {
+      const next = [...prev];
+      next[index] = null;
+      return next;
+    });
+    setActiveSearchIndex(null);
+  };
+
+  const handleRemoveBook = (index: number) => {
+    const newFavoriteBooks = [...profile.favoriteBooks];
+    newFavoriteBooks[index] = "";
+    setProfile({ ...profile, favoriteBooks: newFavoriteBooks });
+
+    const newFavoriteBooksData = [...favoriteBooksData];
+    newFavoriteBooksData[index] = null;
+    setFavoriteBooksData(newFavoriteBooksData);
+
+    const newQueries = [...searchQueries];
+    newQueries[index] = "";
+    setSearchQueries(newQueries);
   };
 
   const handleSaveProfile = async () => {
@@ -196,7 +330,7 @@ export default function ProfileEditPage() {
           location: profile.location,
           bio: profile.bio,
           pronouns: profile.pronouns,
-          favoriteBooks: profile.favoriteBooks.filter(b => b.trim())
+          favoriteBooks: profile.favoriteBooks.filter(b => b && b.trim().length > 0)
         })
       });
 
@@ -503,16 +637,87 @@ export default function ProfileEditPage() {
                     <label className="block text-sm font-medium text-gray-300 mb-3">
                       Favori Kitaplar (4 adet)
                     </label>
-                    <div className="flex flex-row gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[0, 1, 2, 3].map((i) => (
-                        <input
-                          key={i}
-                          type="text"
-                          value={profile.favoriteBooks[i] || ""}
-                          onChange={(e) => handleFavoriteBookChange(i, e.target.value)}
-                          className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                          placeholder={`Favori kitap ${i + 1}`}
-                        />
+                        <div key={i} className="relative" data-search-index={i}>
+                          {favoriteBooksData[i] ? (
+                            <div className="bg-slate-900/50 border border-slate-600 rounded-lg p-3 flex items-center gap-3">
+                              {favoriteBooksData[i]?.thumbnail && (
+                                <img
+                                  src={favoriteBooksData[i]?.thumbnail}
+                                  alt={favoriteBooksData[i]?.title}
+                                  className="w-12 h-16 object-cover rounded"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-white text-sm font-medium truncate">
+                                  {favoriteBooksData[i]?.title}
+                                </p>
+                                {favoriteBooksData[i]?.authors && (
+                                  <p className="text-gray-400 text-xs truncate">
+                                    {favoriteBooksData[i]?.authors?.join(", ")}
+                                  </p>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveBook(i)}
+                                className="text-gray-400 hover:text-red-400 transition-colors"
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="relative">
+                              <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                  ref={(el) => { searchInputRefs.current[i] = el; }}
+                                  type="text"
+                                  value={searchQueries[i]}
+                                  onChange={(e) => handleSearchQueryChange(i, e.target.value)}
+                                  onFocus={() => {
+                                    if (searchQueries[i].trim().length >= 2 && searchResults[i]) {
+                                      setActiveSearchIndex(i);
+                                    }
+                                  }}
+                                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                  placeholder={`Kitap ara... (${i + 1}/4)`}
+                                />
+                              </div>
+                              {activeSearchIndex === i && searchResults[i] && searchResults[i]!.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+                                  {searchResults[i]!.map((book) => (
+                                    <button
+                                      key={book.id}
+                                      type="button"
+                                      onClick={() => handleSelectBook(i, book)}
+                                      className="w-full p-3 hover:bg-slate-700 transition-colors flex items-center gap-3 text-left"
+                                    >
+                                      {book.volumeInfo.imageLinks?.thumbnail && (
+                                        <img
+                                          src={book.volumeInfo.imageLinks.thumbnail}
+                                          alt={book.volumeInfo.title}
+                                          className="w-10 h-14 object-cover rounded flex-shrink-0"
+                                        />
+                                      )}
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-white text-sm font-medium truncate">
+                                          {book.volumeInfo.title}
+                                        </p>
+                                        {book.volumeInfo.authors && (
+                                          <p className="text-gray-400 text-xs truncate">
+                                            {book.volumeInfo.authors.join(", ")}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>

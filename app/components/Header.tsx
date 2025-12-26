@@ -141,7 +141,16 @@ export default function Header({ user }: HeaderProps) {
                     >
                       Kitaplarım
                     </Link>
-                    <Link href="/likes" className="block py-2 text-sm hover:text-neutral-300">
+                    <Link
+                      href={`/p/${encodeURIComponent(user.name || "me")}/reviews`}
+                      className="block py-2 text-sm hover:text-neutral-300"
+                    >
+                      İncelemelerim
+                    </Link>
+                    <Link
+                      href={`/p/${encodeURIComponent(user.name || "me")}/likes`}
+                      className="block py-2 text-sm hover:text-neutral-300"
+                    >
                       Beğenilerim
                     </Link>
                     <button
