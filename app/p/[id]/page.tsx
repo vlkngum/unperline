@@ -3,6 +3,7 @@
 import { Book } from "../../types/book";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import BookCard from "../../components/book/BookCard";
 
 async function fetchBookById(id: string): Promise<Book | null> {
   try {
@@ -37,11 +38,11 @@ export default function ProfilePage() {
         const profileRes = await fetch(`/api/p/${encodeURIComponent(profileId)}/profile`, {
           cache: "no-store",
         });
-        
+
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           const favoriteBookIds = profileData.favoriteBooks || [];
-          
+
           if (favoriteBookIds.length > 0) {
             const books = await fetchBooksByIds(favoriteBookIds);
             setFavoriteBooks(books);
@@ -55,7 +56,7 @@ export default function ProfilePage() {
         setLoading(false);
       }
     }
-    
+
     if (profileId) {
       load();
     }
@@ -74,24 +75,14 @@ export default function ProfilePage() {
               </h2>
               <div className="flex gap-4 flex-wrap">
                 {favoriteBooks.map((book) => (
-                  <div key={book.id} className="flex-shrink-0">
-                    {book.volumeInfo.imageLinks?.thumbnail ? (
-                      <img
-                        src={book.volumeInfo.imageLinks.thumbnail}
-                        alt={book.volumeInfo.title}
-                        className="w-24 h-36 object-cover rounded-lg shadow-lg border-2 border-slate-600 hover:border-blue-500 transition-all"
-                      />
-                    ) : (
-                      <div className="w-24 h-36 bg-slate-700 rounded-lg flex items-center justify-center">
-                        <span className="text-gray-500 text-xs">Kapak yok</span>
-                      </div>
-                    )}
+                  <div key={book.id} className="w-[120px]">
+                    <BookCard book={book} roundedBottom={true} />
                   </div>
                 ))}
               </div>
             </section>
           )}
-          
+
           {!loading && favoriteBooks.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-400">Henüz favori kitap eklenmemiş.</p>
