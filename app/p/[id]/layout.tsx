@@ -53,7 +53,7 @@ export default function ProfileLayout({
         const res = await fetch(`/api/p/${encodeURIComponent(profileId)}/profile`, {
           cache: "no-store",
         });
-        
+
         if (!res.ok) {
           if (res.status === 404) {
             setError("Bu kullanıcı bulunamadı");
@@ -63,7 +63,7 @@ export default function ProfileLayout({
           setLoading(false);
           return;
         }
-        
+
         const data: ProfileData = await res.json();
         setProfile({
           ...data,
@@ -78,13 +78,13 @@ export default function ProfileLayout({
     }
 
     loadProfile();
-  }, [profileId]); 
+  }, [profileId]);
 
   const handleFollow = async () => {
     if (!session) {
       return;
     }
-    
+
     try {
       setIsFollowing(!isFollowing);
     } catch (e) {
@@ -94,12 +94,14 @@ export default function ProfileLayout({
 
   const tabs = [
     { id: "overview", label: "Genel Bakış", href: `/p/${encodeURIComponent(profileId)}` },
+    { id: "readlist", label: "Okuma Listesi", href: `/p/${encodeURIComponent(profileId)}/readlist` },
     { id: "books", label: "Kitaplar", href: `/p/${encodeURIComponent(profileId)}/books` },
     { id: "reviews", label: "İncelemeler", href: `/p/${encodeURIComponent(profileId)}/reviews` },
     { id: "likes", label: "Beğeniler", href: `/p/${encodeURIComponent(profileId)}/likes` },
   ];
 
   const currentTab = useMemo(() => {
+    if (pathname?.includes("/readlist")) return "readlist";
     if (pathname?.includes("/books")) return "books";
     if (pathname?.includes("/reviews")) return "reviews";
     if (pathname?.includes("/likes")) return "likes";
@@ -136,17 +138,16 @@ export default function ProfileLayout({
             profileName: profile.fullName ?? "",
             isOwner,
             bannerUrl: profile.bannerUrl ?? "",
-            profileImage: profile.avatarUrl  ?? "",
+            profileImage: profile.avatarUrl ?? "",
             description: profile.bio ?? "",
             editHref: isOwner ? `/profile/edit` : undefined,
             followButton: !isOwner && session ? (
               <button
                 onClick={handleFollow}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isFollowing
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${isFollowing
                     ? "bg-neutral-800 text-white border border-white/20 hover:bg-neutral-700"
                     : "bg-white text-black hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 {isFollowing ? "Takipten Çık" : "Takip Et"}
               </button>
@@ -164,11 +165,10 @@ export default function ProfileLayout({
                   <Link
                     key={tab.id}
                     href={tab.href}
-                    className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-                      isActive
+                    className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${isActive
                         ? "border-white text-white"
                         : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
-                    }`}
+                      }`}
                   >
                     {tab.label}
                   </Link>

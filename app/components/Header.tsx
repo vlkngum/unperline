@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { handleSignOut } from '@/app/lib/actions'
 import AuthModal from './AuthModal'
+import Image from 'next/image'
 
 interface HeaderProps {
   user?: {
@@ -16,8 +17,8 @@ interface HeaderProps {
 }
 
 const LogoIcon = () => (
-  <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center p-2 box-border">
-    <BookOpen className="w-full h-full text-[#8B4513]" strokeWidth={2.5} />
+  <div className="flex items-center justify-center box-border">
+    <Image src="/logo.png" alt="Unperline" className='w-15 h-15 rounded-full' width={1000} height={1000} />
   </div>
 )
 
@@ -41,7 +42,7 @@ export default function Header({ user }: HeaderProps) {
     <nav className="text-white py-5 px-6 flex justify-between items-center w-full relative">
       <div className="flex w-full max-w-7xl justify-between items-center mx-auto">
         <Link href="/">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <LogoIcon />
             <span className="text-2xl font-semibold tracking-wide">Unperline</span>
           </div>

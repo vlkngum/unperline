@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Check, Plus, MoreHorizontal } from "lucide-react";
+import { Check, Plus, MoreHorizontal, Heart } from "lucide-react";
 import StarDisplay from "../ui/StarDisplay";
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type StaticRating = {
   value: number;
@@ -30,6 +33,101 @@ export default function BookCard({
   friendInfo?: FriendInfo;
   customCoverUrl?: string;
 }) {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [isRead, setIsRead] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isInReadList, setIsInReadList] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (session?.user?.id && book?.id) {
+      fetch(`/api/books/${book.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setIsRead(data.isRead || false);
+          setIsLiked(data.isLiked || false);
+          setIsInReadList(data.isInReadList || false);
+        })
+        .catch((err) => console.error("Error fetching book status:", err));
+    }
+  }, [session, book?.id]);
+
+  const handleReadClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!session?.user?.id) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/books/${book.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "read" }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsRead(data.readBooks.includes(book.id));
+        setIsInReadList(data.readList.includes(book.id));
+      }
+    } catch (error) {
+      console.error("Error updating read status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!session?.user?.id) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/books/${book.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "like" }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsLiked(data.likedBooks.includes(book.id));
+        setIsRead(data.readBooks.includes(book.id));
+        setIsInReadList(data.readList.includes(book.id));
+      }
+    } catch (error) {
+      console.error("Error updating like status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReadListClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!session?.user?.id) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/books/${book.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "readList" }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsInReadList(data.readList.includes(book.id));
+      }
+    } catch (error) {
+      console.error("Error updating read list:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const info = book?.volumeInfo || {};
   const imageLinks = info.imageLinks || {};
 
@@ -51,12 +149,6 @@ export default function BookCard({
 
   const title = book.volumeInfo.title || "Başlık Yok";
   const authors = book.volumeInfo.authors?.join(", ") || "Bilinmeyen Yazar";
-
-  const handleActionClick = (e: React.MouseEvent, action: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log(`${action} tıklandı: ${book.id}`);
-  };
 
   return (
     <div className="group w-full relative">
@@ -83,32 +175,44 @@ export default function BookCard({
             <div className="mt-auto">
               <div className="flex justify-end gap-1.5 z-10 pointer-events-auto">
                 <button
-                  title="Okudum"
-                  onClick={(e) => handleActionClick(e, "Okudum")}
-                  className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
+                  title={isRead ? "Okundu" : "Okudum olarak işaretle"}
+                  onClick={handleReadClick}
+                  disabled={isLoading}
+                  className={`p-1.5 rounded-full transition-colors cursor-pointer ${isRead
+                    ? "bg-gray-900 text-white hover:bg-black"
+                    : "bg-black/60 hover:bg-white text-white hover:text-black"
+                    }`}
                 >
                   <Check size={16} />
                 </button>
                 <button
-                  title="Okuma Listesine Ekle"
-                  onClick={(e) => handleActionClick(e, "Listeye Ekle")}
-                  className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
+                  title={isLiked ? "Beğendin" : "Beğen"}
+                  onClick={handleLikeClick}
+                  disabled={isLoading}
+                  className={`p-1.5 rounded-full transition-colors cursor-pointer ${isLiked
+                    ? "bg-gray-900 text-white hover:bg-black"
+                    : "bg-black/60 hover:bg-white text-white hover:text-black"
+                    }`}
                 >
-                  <Plus size={16} />
+                  <Heart size={14} fill={isLiked ? "currentColor" : "none"} />
                 </button>
                 <button
-                  title="Daha Fazla"
-                  onClick={(e) => handleActionClick(e, "Daha Fazla")}
-                  className="p-1.5 bg-black/60 hover:bg-white text-white hover:text-black rounded-full transition-colors"
+                  title={isInReadList ? "Listeden Çıkar" : "Listeye Ekle"}
+                  onClick={handleReadListClick}
+                  disabled={isLoading}
+                  className={`p-1.5 rounded-full transition-colors cursor-pointer ${isInReadList
+                    ? "bg-gray-900 text-white hover:bg-black"
+                    : "bg-black/60 hover:bg-white text-white hover:text-black"
+                    }`}
                 >
-                  <MoreHorizontal size={16} />
+                  {isInReadList ? <Check size={16} /> : <Plus size={16} />}
                 </button>
               </div>
             </div>
           </div>
         </div>
       </Link>
-      {/* Başlık + puan her zaman kapak altında görünsün */}
+
       {roundedBottom && (
         <div className="mt-2 space-y-1">
           <h2 className="text-xs font-medium text-white truncate">

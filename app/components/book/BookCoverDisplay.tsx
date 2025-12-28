@@ -8,12 +8,14 @@ type BookCoverDisplayProps = {
     defaultThumbnail: string;
     customCoverUrl?: string;
     title: string;
+    resetOnClick?: boolean;
 };
 
 export default function BookCoverDisplay({
     defaultThumbnail,
     customCoverUrl,
     title,
+    resetOnClick,
 }: BookCoverDisplayProps) {
     const [showOriginal, setShowOriginal] = useState(false);
     const hasCustomCover = !!customCoverUrl;
