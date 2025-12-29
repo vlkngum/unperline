@@ -17,7 +17,6 @@ model User {
   readList      String[] @default([])
   likedBooks    String[] @default([])
   bookRatings   Json     @default("{}")
-  // Profil alanları
   firstName     String?
   lastName      String?
   fullName      String?
