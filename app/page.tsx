@@ -99,7 +99,7 @@ export default async function Page() {
     .slice(0, 8);
 
   return (
-    <main className="min-h-screen text-white mx-auto">
+    <main className="min-h-screen text-white mx-auto w-full">
       {!currentUser && <HomeHeader currentUser={currentUser} />}
 
       <div className="flex flex-col gap-8 mt-8">
